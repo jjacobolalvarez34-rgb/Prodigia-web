@@ -37,18 +37,39 @@ Corte de fecha: publicadas antes del 2026-09-26.
 
 ## Fase 1 — Base
 
-- [ ] Crear la app Next.js en la **raíz** del repo (TypeScript, App Router, Tailwind 4, ESLint, sin `src/`, alias `@/*`).
-- [ ] Scripts: `dev`, `build`, `start`, `lint`, `typecheck` (`tsc --noEmit`), `actividad` (`node scripts/generar-actividad.mjs`).
-- [ ] Tokens de marca en `app/globals.css` (`DISENO.md §1`) y fuentes con `next/font`.
-- [ ] Estructura shadcn mínima: `components/ui/button.tsx`, `lib/utils.ts` (`cn`).
-- [ ] `contenido/`: `tipos.ts`, `config.ts` (con `null` en lo pendiente), `mundos.ts` (15 mundos), `tramos.ts`, `es/*.ts`.
-- [ ] `components/marca/Logo.tsx`: port fiel de `calibra/src/components/Logo.tsx` (mismos paths, dasharray y degradado).
-- [ ] Encabezado (escritorio) + menú móvil a pantalla completa (accesible) + pie.
-- [ ] `loading.tsx` (pluma dibujándose), `not-found.tsx`, `error.tsx`, `global-error.tsx`, `privacidad/page.tsx`, `<noscript>`.
-- [ ] Cabeceras de seguridad + `proxy.ts` con CSP y nonce. Verificar con `curl -I http://localhost:3000` en `next start`.
-- [ ] `.env.example`, `.gitignore` (incluye `.env*.local`, `.next`, `node_modules`).
+- [x] Crear la app Next.js en la **raíz** del repo (TypeScript, App Router, Tailwind 4, ESLint, sin `src/`, alias `@/*`).
+- [x] Scripts: `dev`, `build`, `start`, `lint`, `typecheck` (`tsc --noEmit`), `actividad` (`node scripts/generar-actividad.mjs`).
+- [x] Tokens de marca en `app/globals.css` (`DISENO.md §1`) y fuentes con `next/font`.
+- [x] Estructura shadcn mínima: `components/ui/button.tsx`, `lib/utils.ts` (`cn`).
+- [x] `contenido/`: `tipos.ts`, `config.ts` (con `null` en lo pendiente), `mundos.ts` (15 mundos), `tramos.ts`, `es/*.ts`.
+- [x] `components/marca/Logo.tsx`: port fiel de `calibra/src/components/Logo.tsx` (mismos paths, dasharray y degradado).
+- [x] Encabezado (escritorio) + menú móvil a pantalla completa (accesible) + pie.
+- [x] `loading.tsx` (pluma dibujándose), `not-found.tsx`, `error.tsx`, `global-error.tsx`, `privacidad/page.tsx`, `<noscript>`.
+- [x] Cabeceras de seguridad + `proxy.ts` con CSP y nonce. Verificar con `curl -I http://localhost:3000` en `next start`.
+- [x] `.env.example`, `.gitignore` (incluye `.env*.local`, `.next`, `node_modules`).
 
 **Aceptación:** build limpio; 404 y error se ven con la estética del sitio; el menú móvil se abre/cierra con teclado y Escape, atrapa el foco y devuelve el foco al botón; la consola del navegador no muestra violaciones de CSP.
+
+**Resultado (2026-10-10).** `lint` 0 problemas · `typecheck` ok · `build` ok (las 3 rutas, dinámicas por el nonce).
+- `curl -I` en `next start`: las 7 cabeceras de `SEGURIDAD_Y_DESPLIEGUE.md §1`; la CSP lleva un nonce distinto en cada petición y Next lo pone en sus `<script>`.
+- Revisado con Chrome (Playwright, `.tmp/`) a 375, 768, 1024 y 1440px: sin scroll horizontal; **0 violaciones de CSP** en `next start` y en `next dev`, también en los estados de error.
+- Menú móvil solo con teclado: `aria-expanded` cambia, `#raiz` queda `inert`, Tab ×14 y Shift+Tab no salen del diálogo, Escape cierra y devuelve el foco al botón; al elegir un enlace navega y libera la página. Con `reduced-motion`, fundido sin círculo ni onda.
+- `error.tsx`, `global-error.tsx` (HTTP 500, documento propio) y `loading.tsx` se verificaron con un build temporal con rutas de prueba, ya borradas.
+
+**Decisiones de la fase:**
+- La app se armó a mano (no `create-next-app`, que rechaza una carpeta con archivos). `typecheck` = `next typegen && tsc --noEmit`, para validar también los tipos de rutas (Next 16).
+- Textos que no dependen del idioma separados de los que sí: `contenido/mundos.ts` (colores, glifos) + `contenido/es/mundos.ts` (nombre, tema, línea, modos). El tipo `Contenido` es la forma de `contenido/es`, así un `en/` futuro queda obligado a tener las mismas claves.
+- `Logo.tsx`: mismos paths, dasharray y degradado; los ids del `<defs>` son únicos por instancia (`useId`), porque hay varios logos por página y un id repetido dentro de un elemento oculto deja sin degradado a los demás.
+- Menú móvil en un portal sobre `<body>`, con su propio botón de cerrar donde estaba la hamburguesa (el botón original queda dentro de `#raiz`, que está inerte).
+- `next dev` añade al final de `CLAUDE.md` un bloque de reglas de Next (`generate-agent-files.js`, sin opción para apagarlo). Se versiona: si se borra, vuelve a aparecer.
+
+**Queda a medias (a propósito o para otra fase):**
+- El inicio solo tiene el bloque `#inicio`; los enlaces del menú apuntan a secciones que llegan en la Fase 2. El `<h1>` es «Prodigia» hasta que la Fase 3 ponga la frase de la pluma.
+- `/favicon.ico` da 404 (un error en consola) hasta los iconos de la Fase 4.
+- `npm run actividad` está declarado, pero `scripts/generar-actividad.mjs` se crea en la Fase 4.
+- Los textos de las secciones del acto 4 se suman a `contenido/es/sitio.ts` en la Fase 2.
+- En escritorio, «Abrir Prodigia» con degradado aparece en el encabezado y en `#inicio` a la vez; `DISENO.md` pide el degradado una vez por pantalla, pero también pide ese botón con degradado en el encabezado (§6.1). Hay que elegir en la Fase 2: por ejemplo, botón del encabezado con estilo secundario mientras `#inicio` esté a la vista.
+- Lighthouse (Fase 2) y NVDA (Fase 4) no se midieron todavía.
 
 ## Fase 2 — Acto 4 completo (el sitio sirve sin intro)
 

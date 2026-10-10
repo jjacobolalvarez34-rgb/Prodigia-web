@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+/* Tokens de marca: «Noche de Prodigia» (docs/DISENO.md §1, mobile/src/tema.ts).
+   El sitio es solo oscuro. */
+@theme {
+  --color-fondo: #090c14;
+  --color-fondo-hondo: #05070d;
+  --color-sup-1: #12172a;
+  --color-sup-2: #171d34;
+  --color-sup-3: #1e2542;
+  --color-borde: #232b47;
+  --color-texto: #f4f6fb;
+  --color-texto-2: #8892b0;
+  --color-violeta: #7c5cff;
+  --color-violeta-neon: #9b85ff;
+  --color-violeta-base: #6c4cf1;
+  --color-violeta-labio: #4a31b8;
+  --color-violeta-claro: #b9a8ff;
+  --color-oro: #ffb627;
+  --color-oro-claro: #ffc53d;
+  --color-oro-labio: #b87800;
+  --color-acierto: #3ddc97;
+  --color-racha: #ff8a3d;
+  --color-error: #ff5d5d;
+
+  /* Escala fluida entre 375px y 1440px de ancho. */
+  --text-display: clamp(2.5rem, 1.444rem + 4.507vw, 5.5rem);
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.025em;
+  --text-titulo: clamp(1.875rem, 1.303rem + 2.441vw, 3.5rem);
+  --text-titulo--line-height: 1.1;
+  --text-titulo--letter-spacing: -0.02em;
+  --text-subtitulo: clamp(1.25rem, 1.074rem + 0.751vw, 1.75rem);
+  --text-subtitulo--line-height: 1.25;
+  --text-cuerpo: clamp(1rem, 0.956rem + 0.188vw, 1.125rem);
+  --text-cuerpo--line-height: 1.6;
+  --text-etiqueta: 0.8125rem;
+  --text-etiqueta--line-height: 1.4;
+
+  --radius-chip: 12px;
+  --radius-boton: 16px;
+  --radius-tarjeta: 20px;
+  --radius-bloque: 28px;
+
+  /* power2.out / power2.in / expo.out de GSAP, para transiciones en CSS. */
+  --ease-entrar: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-salir: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  --ease-destello: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Fuentes autoalojadas con next/font (variables puestas en <html>). */
+@theme inline {
+  --font-display: var(--fuente-display), ui-sans-serif, system-ui, sans-serif;
+  --font-cuerpo: var(--fuente-cuerpo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--fuente-mono), ui-monospace, "Cascadia Mono", monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--color-fondo);
+    scrollbar-gutter: stable;
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    font-family: var(--font-cuerpo);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-violeta);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: rgb(124 92 255 / 0.4);
+    color: var(--color-texto);
+  }
+}
+
+@layer components {
+  /* Cielo fijo del sitio: estrellas quietas, dos nebulosas violeta muy tenues
+     y una viñeta. Nada se mueve mientras se lee (DISENO.md §5). */
+  .cielo {
+    background-color: var(--color-fondo);
+    background-image:
+      radial-gradient(ellipse 120% 90% at 50% 40%, transparent 55%, rgb(5 7 13 / 0.75) 100%),
+      radial-gradient(ellipse 45% 35% at 15% 20%, rgb(124 92 255 / 0.09), transparent 70%),
+      radial-gradient(ellipse 40% 30% at 88% 75%, rgb(124 92 255 / 0.07), transparent 70%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Ccircle cx='0.0' cy='386.7' r='0.6' fill='%23B9A8FF' fill-opacity='0.65'/%3E%3Ccircle cx='223.7' cy='138.3' r='0.6' fill='%23F4F6FB' fill-opacity='0.55'/%3E%3Ccircle cx='287.5' cy='267.1' r='0.6' fill='%23B9A8FF' fill-opacity='0.46'/%3E%3Ccircle cx='297.3' cy='293.2' r='0.6' fill='%23F4F6FB' fill-opacity='0.51'/%3E%3Ccircle cx='387.4' cy='339.1' r='0.6' fill='%23F4F6FB' fill-opacity='0.76'/%3E%3Ccircle cx='289.2' cy='270.4' r='0.6' fill='%23F4F6FB' fill-opacity='0.75'/%3E%3Ccircle cx='156.3' cy='140.9' r='0.6' fill='%23F4F6FB' fill-opacity='0.33'/%3E%3Ccircle cx='125.0' cy='180.0' r='0.6' fill='%23F4F6FB' fill-opacity='0.56'/%3E%3Ccircle cx='306.3' cy='368.7' r='0.6' fill='%23F4F6FB' fill-opacity='0.56'/%3E%3Ccircle cx='213.7' cy='177.0' r='0.6' fill='%23F4F6FB' fill-opacity='0.28'/%3E%3Ccircle cx='153.5' cy='144.5' r='0.6' fill='%23F4F6FB' fill-opacity='0.53'/%3E%3Ccircle cx='69.5' cy='170.4' r='0.6' fill='%23F4F6FB' fill-opacity='0.48'/%3E%3Ccircle cx='139.7' cy='223.3' r='0.6' fill='%23B9A8FF' fill-opacity='0.75'/%3E%3Ccircle cx='192.3' cy='362.5' r='0.6' fill='%23F4F6FB' fill-opacity='0.53'/%3E%3Ccircle cx='212.1' cy='289.4' r='1.1' fill='%23F4F6FB' fill-opacity='0.64'/%3E%3Ccircle cx='105.5' cy='246.5' r='0.6' fill='%23F4F6FB' fill-opacity='0.47'/%3E%3Ccircle cx='333.8' cy='368.6' r='0.6' fill='%23F4F6FB' fill-opacity='0.29'/%3E%3Ccircle cx='170.9' cy='64.5' r='0.6' fill='%23F4F6FB' fill-opacity='0.37'/%3E%3Ccircle cx='265.6' cy='60.6' r='0.6' fill='%23F4F6FB' fill-opacity='0.33'/%3E%3Ccircle cx='387.2' cy='371.5' r='1.1' fill='%23F4F6FB' fill-opacity='0.75'/%3E%3Ccircle cx='319.7' cy='115.7' r='0.6' fill='%23B9A8FF' fill-opacity='0.29'/%3E%3Ccircle cx='0.7' cy='259.1' r='0.6' fill='%23F4F6FB' fill-opacity='0.52'/%3E%3Ccircle cx='288.8' cy='100.0' r='1.1' fill='%23B9A8FF' fill-opacity='0.46'/%3E%3Ccircle cx='375.6' cy='49.7' r='0.6' fill='%23B9A8FF' fill-opacity='0.75'/%3E%3Ccircle cx='267.5' cy='387.3' r='0.6' fill='%23F4F6FB' fill-opacity='0.35'/%3E%3Ccircle cx='406.9' cy='237.4' r='0.6' fill='%23F4F6FB' fill-opacity='0.37'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='293' height='293'%3E%3Ccircle cx='2.8' cy='93.1' r='0.6' fill='%23F4F6FB' fill-opacity='0.49'/%3E%3Ccircle cx='57.3' cy='15.5' r='0.6' fill='%23F4F6FB' fill-opacity='0.48'/%3E%3Ccircle cx='70.8' cy='281.2' r='0.6' fill='%23F4F6FB' fill-opacity='0.78'/%3E%3Ccircle cx='190.5' cy='58.1' r='0.6' fill='%23B9A8FF' fill-opacity='0.52'/%3E%3Ccircle cx='52.1' cy='139.9' r='0.6' fill='%23B9A8FF' fill-opacity='0.34'/%3E%3Ccircle cx='67.4' cy='142.0' r='1.1' fill='%23F4F6FB' fill-opacity='0.40'/%3E%3Ccircle cx='98.4' cy='161.8' r='1.1' fill='%23F4F6FB' fill-opacity='0.43'/%3E%3Ccircle cx='12.0' cy='198.1' r='0.6' fill='%23F4F6FB' fill-opacity='0.71'/%3E%3Ccircle cx='247.9' cy='136.8' r='0.6' fill='%23F4F6FB' fill-opacity='0.79'/%3E%3Ccircle cx='203.5' cy='128.1' r='0.6' fill='%23F4F6FB' fill-opacity='0.54'/%3E%3Ccircle cx='250.4' cy='152.7' r='0.6' fill='%23B9A8FF' fill-opacity='0.43'/%3E%3Ccircle cx='137.7' cy='106.2' r='0.6' fill='%23F4F6FB' fill-opacity='0.66'/%3E%3C/svg%3E");
+    background-size:
+      100% 100%,
+      100% 100%,
+      100% 100%,
+      420px 420px,
+      293px 293px;
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      137px 71px;
+  }
+
+  /* Pluma dibujándose (carga de marca, DISENO.md §4): trazo del contorno en
+     bucle de 1.4s y relleno que aparece al cerrarse el trazo. */
+  .pluma-trazo {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    fill-opacity: 0;
+    animation: pluma-trazar 1.4s var(--ease-entrar) infinite;
+  }
+
+  @keyframes pluma-trazar {
+    0% {
+      stroke-dashoffset: 1;
+      fill-opacity: 0;
+      opacity: 1;
+    }
+    55% {
+      stroke-dashoffset: 0;
+      fill-opacity: 0;
+    }
+    80% {
+      fill-opacity: 1;
+      opacity: 1;
+    }
+    100% {
+      stroke-dashoffset: 0;
+      fill-opacity: 1;
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pluma-trazo {
+      animation: none;
+      stroke-dashoffset: 0;
+      fill-opacity: 1;
+    }
+  }
+
+  /* Texto del menú móvil: la «onda» violeta→dorada lo recorre al mover el
+     fondo (ver components/sitio/MenuMovil.tsx). */
+  .texto-onda {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-texto) 0%,
+      var(--color-texto) 35%,
+      var(--color-violeta-neon) 45%,
+      var(--color-oro-claro) 55%,
+      var(--color-texto) 65%,
+      var(--color-texto) 100%
+    );
+    background-size: 300% 100%;
+    background-position: 100% 0;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* prefers-reduced-motion en todo el sitio, no solo en la intro. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

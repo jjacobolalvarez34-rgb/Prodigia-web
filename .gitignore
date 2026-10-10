@@ -1,11 +1,26 @@
-node_modules/
-.next/
-out/
-.tmp/
-.vercel/
-*.tsbuildinfo
+# dependencias
+/node_modules
+
+# Next.js
+/.next/
+/out/
+/build
 next-env.d.ts
+*.tsbuildinfo
+
+# variables de entorno locales (nunca se versionan)
 .env*.local
 .env
+
+# temporales de scripts y pruebas (CLAUDE.md: todo en D:)
+/.tmp/
+
+# registros
 npm-debug.log*
+
+# sistema
 .DS_Store
+Thumbs.db
+
+# Vercel
+.vercel

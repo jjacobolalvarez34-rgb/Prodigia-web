@@ -1,0 +1,32 @@
+import Logo from "@/components/marca/Logo";
+import EnlaceExterno from "@/components/sitio/EnlaceExterno";
+import { buttonVariants } from "@/components/ui/button";
+import { es } from "@/contenido/es";
+import { urlDemo, urlWeb } from "@/lib/url";
+
+// Fase 1: solo el bloque #inicio (logo al centro, lema y dos CTA). Las
+// secciones del acto 4 llegan en la Fase 2 y la intro (actos 1-3) en la Fase 3;
+// entonces el <h1> pasa a ser la frase de la pluma y este título, un <h2>.
+export default function Inicio() {
+  const t = es.sitio.inicio;
+
+  return (
+    <section id="inicio" aria-labelledby="inicio-titulo" className="grid min-h-svh place-items-center px-4 pt-24 pb-16">
+      <div className="flex flex-col items-center text-center">
+        <Logo size={160} className="size-28 md:size-40" />
+        <h1 id="inicio-titulo" className="mt-6 text-display font-bold">
+          {t.nombre}
+        </h1>
+        <p className="mt-3 text-subtitulo text-texto-2">{t.lema}</p>
+        <div className="mt-10 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
+          <EnlaceExterno href={urlWeb()} className={buttonVariants({ size: "lg" })}>
+            {t.abrir}
+          </EnlaceExterno>
+          <EnlaceExterno href={urlDemo()} className={buttonVariants({ variant: "secundario", size: "lg" })}>
+            {t.probar}
+          </EnlaceExterno>
+        </div>
+      </div>
+    </section>
+  );
+}
