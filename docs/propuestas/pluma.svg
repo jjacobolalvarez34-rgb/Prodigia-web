@@ -1,0 +1,38 @@
+<!--
+  PROPUESTA de pluma para la intro (pendiente de aprobación).
+  No existe un SVG de pluma en el proyecto original. Esta pluma sale del
+  "brazo cometa" de la chispa del logo real (calibra/src/components/Logo.tsx:
+  d="M0,0 C-10,-9 -5,-27 0.5,-36 C4,-24 7,-8 0,0 Z"), escalado x2.2 / y4.4.
+  Así, en el Acto 3, la pluma se encoge y se convierte en el brazo largo de la
+  chispa del logo sin cambiar de forma: la narrativa queda cerrada.
+  La punta que escribe es el extremo inferior del cálamo (0.4, 42).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -175 120 230" width="240" height="460" role="img" aria-label="Pluma dorada de Prodigia (propuesta)">
+  <defs>
+    <linearGradient id="pluma-oro" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#B87800" />
+      <stop offset="35%" stop-color="#FFB627" />
+      <stop offset="80%" stop-color="#FFC53D" />
+      <stop offset="100%" stop-color="#FFE7A3" />
+    </linearGradient>
+    <radialGradient id="punta-brillo">
+      <stop offset="0%" stop-color="#FFE7A3" stop-opacity="1" />
+      <stop offset="100%" stop-color="#FFB627" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <g transform="rotate(-18)">
+    <!-- Barbas (vexilo): brazo cometa del logo, escalado -->
+    <path d="M0,0 C-22,-39.6 -11,-118.8 1.1,-158.4 C8.8,-105.6 15.4,-35.2 0,0 Z" fill="url(#pluma-oro)" />
+    <!-- Muescas: rompen el contorno para que se lea pluma y no hoja -->
+    <path d="M-19.5,-66 L-7,-58 L-18.5,-55 Z" fill="#090C14" />
+    <path d="M-16,-98 L-5,-90 L-14.5,-87.5 Z" fill="#090C14" />
+    <path d="M13.5,-48 L3.5,-41 L13,-38.5 Z" fill="#090C14" />
+    <!-- Raquis (eje central) -->
+    <path d="M0.4,8 C0.5,-40 0.8,-100 1.1,-150" fill="none" stroke="#7A4E00" stroke-width="1.6" stroke-linecap="round" opacity="0.55" />
+    <!-- Cálamo: la parte que escribe -->
+    <path d="M-2.4,-2 L2.4,-2 L0.4,42 Z" fill="#FFB627" />
+    <!-- Punta encendida (aquí nace la tinta/partículas) -->
+    <circle cx="0.4" cy="42" r="6" fill="url(#punta-brillo)" />
+  </g>
+</svg>

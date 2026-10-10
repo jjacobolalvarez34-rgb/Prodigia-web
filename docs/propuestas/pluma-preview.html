@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Propuesta: pluma → chispa → logo</title>
+<style>
+  body { margin: 0; background: #090C14; color: #F4F6FB; font: 15px/1.5 system-ui, sans-serif; }
+  main { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+  h1 { font-size: 22px; } p { color: #8892B0; }
+  .fila { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; justify-content: center; margin-top: 32px; }
+  figure { margin: 0; text-align: center; background: #12172A; border: 1px solid #232B47; border-radius: 20px; padding: 24px; }
+  figcaption { margin-top: 12px; font-size: 13px; color: #8892B0; max-width: 220px; }
+  .anillo-dibujo circle { stroke-dasharray: 158.6 400; animation: trazar 3s ease-in-out infinite alternate; }
+  @keyframes trazar { from { stroke-dasharray: 0 400; } to { stroke-dasharray: 158.6 400; } }
+  @media (prefers-reduced-motion: reduce) { .anillo-dibujo circle { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Propuesta de pluma (pendiente de aprobación)</h1>
+  <p>La pluma se construye con el mismo trazo del brazo largo de la chispa del logo real. En la intro escribe la frase, vuela, dibuja el aro dejando la apertura del logo, y al final se encoge hasta ser la chispa que escapa por esa apertura.</p>
+
+  <div class="fila">
+    <figure>
+      <img src="pluma.svg" width="160" alt="Pluma dorada propuesta" />
+      <figcaption>1 · La pluma (Acto 1). Dorado #FFB627, punta encendida.</figcaption>
+    </figure>
+
+    <figure>
+      <svg width="200" height="200" viewBox="0 0 100 100" class="anillo-dibujo" aria-label="Aro dibujándose">
+        <circle cx="50" cy="50" r="34" fill="none" stroke="#7C5CFF" stroke-width="14" stroke-dashoffset="27.5" transform="rotate(82 50 50)" />
+      </svg>
+      <figcaption>2 · El aro se traza dejando la apertura del logo (Acto 2, versión 2D de referencia).</figcaption>
+    </figure>
+
+    <figure>
+      <svg width="200" height="200" viewBox="0 0 100 100" aria-label="Logo de Prodigia">
+        <defs>
+          <linearGradient id="g" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#A794FF" /><stop offset="50%" stop-color="#E4CBA0" /><stop offset="100%" stop-color="#FFC53D" />
+          </linearGradient>
+          <path id="arm" d="M0,0 C-10,-9 -5,-27 0.5,-36 C4,-24 7,-8 0,0 Z" />
+        </defs>
+        <circle cx="50" cy="50" r="34" fill="none" stroke="#6C4CF1" stroke-width="14" stroke-dasharray="158.6 55" stroke-dashoffset="27.5" transform="rotate(82 50 50)" />
+        <g transform="translate(82 44) rotate(14)" fill="url(#g)">
+          <use href="#arm" /><use href="#arm" transform="rotate(180) scale(0.33)" />
+          <use href="#arm" transform="rotate(84) scale(0.2)" /><use href="#arm" transform="rotate(268) scale(0.15)" />
+        </g>
+      </svg>
+      <figcaption>3 · Logo real (Logo.tsx). El brazo largo de la chispa es la pluma encogida (Acto 3).</figcaption>
+    </figure>
+  </div>
+</main>
+</body>
+</html>
