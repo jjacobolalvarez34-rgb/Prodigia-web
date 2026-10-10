@@ -9,9 +9,31 @@
 
 ## Fase 0 — Preparación (antes de instalar nada)
 
-- [ ] Confirmar que `.npmrc` apunta la caché a `D:/.npm-cache` y que no se escribe nada en C:.
-- [ ] Leer las respuestas en `PENDIENTES.md §3`. Lo no contestado → marcador `[PENDIENTE]`.
-- [ ] Elegir versiones exactas (publicadas hace más de 2 semanas) de: next, react, react-dom, typescript, tailwindcss, @tailwindcss/postcss, gsap, @gsap/react, three, @types/three, @react-three/fiber, eslint, eslint-config-next.
+- [x] Confirmar que `.npmrc` apunta la caché a `D:/.npm-cache` y que no se escribe nada en C:.
+- [x] Leer las respuestas en `PENDIENTES.md §3`. Lo no contestado → marcador `[PENDIENTE]`.
+- [x] Elegir versiones exactas (publicadas hace más de 2 semanas) de: next, react, react-dom, typescript, tailwindcss, @tailwindcss/postcss, gsap, @gsap/react, three, @types/three, @react-three/fiber, eslint, eslint-config-next.
+
+**Resultado (2026-10-10).** `npm config get cache` → `D:\.npm-cache`; `.npmrc` suma `save-exact=true`. `TEMP`/`TMP` de Windows apuntan a C: (2,1 GB libres), así que los comandos de construcción se corren con `TEMP=TMP=<repo>/.tmp` y `NEXT_TELEMETRY_DISABLED=1`.
+
+Corte de fecha: publicadas antes del 2026-09-26.
+
+| Paquete | Versión | Publicada | Motivo |
+|---|---|---|---|
+| next · eslint-config-next | **16.3.8** | 2026-09-30 | **Excepción a las 2 semanas:** 16.0.0–16.3.7 tiene avisos de seguridad (`npm audit`: caché envenenada en SSG/ISR, SSRF en optimización de imágenes, fuga en rutas de imágenes de metadatos…). 16.3.8 es el parche mínimo que los corrige. |
+| react · react-dom | 19.2.8 | 2026-07-21 | Misma línea que `calibra` (probada). 19.3.0 también cabe en el rango de R3F (`<19.4`), pero no aporta nada aquí. |
+| typescript | 5.9.3 | 2025-09-30 | `typescript-eslint` exige `<6.1.0`; 7.x no está soportado por el lint. |
+| eslint | 9.39.5 | 2026-07-10 | `eslint-plugin-react`, `-import` y `-jsx-a11y` (vía eslint-config-next) aún no aceptan ESLint 10. |
+| tailwindcss · @tailwindcss/postcss | 4.3.3 | 2026-07-16 | Última 4.x. |
+| gsap | 3.15.0 | 2026-04-13 | Última. |
+| @gsap/react | 2.1.2 | 2025-01-15 | Última. |
+| three | 0.186.1 | 2026-09-24 | Última. |
+| @types/three | 0.186.0 | 2026-09-11 | Última. |
+| @react-three/fiber | 9.8.1 | 2026-09-24 | Última; pide React `>=19 <19.4`. |
+| @types/react · @types/react-dom | 19.2.18 · 19.2.7 | 2026-07 / 2026-09 | Acordes a React 19.2. |
+| @types/node | 22.20.4 | 2026-09-19 | Node local 22.14. |
+| clsx · tailwind-merge | 2.1.1 · 3.7.0 | — | Util `cn` de shadcn. Sin `class-variance-authority` ni Radix: las variantes del botón son un objeto simple. |
+
+`npm audit --omit=dev`: **0 vulnerabilidades**. `npm audit` completo: 1 aviso alto **sin corrección publicada** en una dependencia de desarrollo (ver `PENDIENTES.md §4`).
 
 ## Fase 1 — Base
 
