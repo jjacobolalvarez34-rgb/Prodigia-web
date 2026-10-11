@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import { connection } from "next/server";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
 import AvisoSinJs from "@/components/sitio/AvisoSinJs";
 import Encabezado from "@/components/sitio/Encabezado";
 import Pie from "@/components/sitio/Pie";
 import { es } from "@/contenido/es";
+import { SCRIPT_INICIAL } from "@/lib/script-inicial";
 import { urlSitio } from "@/lib/url";
 import { cn } from "@/lib/utils";
 
@@ -31,12 +32,22 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  // La CSP lleva un nonce por petición (proxy.ts) y Next solo puede ponerlo en
-  // sus scripts si la página se renderiza por petición, no en el build.
-  await connection();
+  // La CSP lleva un nonce por petición (proxy.ts). Leerlo hace que la página se
+  // renderice por petición, que es lo que Next necesita para ponerlo en sus
+  // propios scripts; aquí además firma el script inicial.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
-    <html lang="es" data-scroll-behavior="smooth" className={cn(display.variable, cuerpo.variable, mono.variable)}>
+    <html
+      lang="es"
+      data-scroll-behavior="smooth"
+      className={cn(display.variable, cuerpo.variable, mono.variable)}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Corre antes del primer pintado; cambia <html>, de ahí suppressHydrationWarning. */}
+        <script nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: SCRIPT_INICIAL }} />
+      </head>
       <body className="bg-fondo font-cuerpo text-texto antialiased">
         <div id="raiz" className="relative isolate flex min-h-dvh flex-col">
           <a

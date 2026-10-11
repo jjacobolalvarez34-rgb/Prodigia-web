@@ -1,32 +1,35 @@
-import Logo from "@/components/marca/Logo";
-import EnlaceExterno from "@/components/sitio/EnlaceExterno";
-import { buttonVariants } from "@/components/ui/button";
-import { es } from "@/contenido/es";
-import { urlDemo, urlWeb } from "@/lib/url";
+import Revelador from "@/components/sitio/Revelador";
+import Aprender from "@/components/sitio/secciones/Aprender";
+import Apoya from "@/components/sitio/secciones/Apoya";
+import Colegios from "@/components/sitio/secciones/Colegios";
+import ComoSeJuega from "@/components/sitio/secciones/ComoSeJuega";
+import Competir from "@/components/sitio/secciones/Competir";
+import Desarrollo from "@/components/sitio/secciones/Desarrollo";
+import Inicio from "@/components/sitio/secciones/Inicio";
+import LosMundos from "@/components/sitio/secciones/LosMundos";
+import Opiniones from "@/components/sitio/secciones/Opiniones";
+import Plataformas from "@/components/sitio/secciones/Plataformas";
+import Pro from "@/components/sitio/secciones/Pro";
+import Progreso from "@/components/sitio/secciones/Progreso";
 
-// Fase 1: solo el bloque #inicio (logo al centro, lema y dos CTA). Las
-// secciones del acto 4 llegan en la Fase 2 y la intro (actos 1-3) en la Fase 3;
-// entonces el <h1> pasa a ser la frase de la pluma y este título, un <h2>.
-export default function Inicio() {
-  const t = es.sitio.inicio;
-
+// Acto 4: el sitio, en el orden del encargo (DISENO.md §6.3). Funciona entero
+// sin la intro; la intro (actos 1-3) se monta arriba en la Fase 3.
+export default function PaginaInicio() {
   return (
-    <section id="inicio" aria-labelledby="inicio-titulo" className="grid min-h-svh place-items-center px-4 pt-24 pb-16">
-      <div className="flex flex-col items-center text-center">
-        <Logo size={160} className="size-28 md:size-40" />
-        <h1 id="inicio-titulo" className="mt-6 text-display font-bold">
-          {t.nombre}
-        </h1>
-        <p className="mt-3 text-subtitulo text-texto-2">{t.lema}</p>
-        <div className="mt-10 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
-          <EnlaceExterno href={urlWeb()} className={buttonVariants({ size: "lg" })}>
-            {t.abrir}
-          </EnlaceExterno>
-          <EnlaceExterno href={urlDemo()} className={buttonVariants({ variant: "secundario", size: "lg" })}>
-            {t.probar}
-          </EnlaceExterno>
-        </div>
-      </div>
-    </section>
+    <>
+      <Inicio />
+      <ComoSeJuega />
+      <LosMundos />
+      <Aprender />
+      <Competir />
+      <Progreso />
+      <Plataformas />
+      <Pro />
+      <Colegios />
+      <Opiniones />
+      <Desarrollo />
+      <Apoya />
+      <Revelador />
+    </>
   );
 }

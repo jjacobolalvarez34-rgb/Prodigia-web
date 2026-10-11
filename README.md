@@ -2,7 +2,7 @@
 
 Página de presentación pública de **Prodigia** (la app para estudiar jugando). No es la app: la presenta y lleva a la web, a la futura app y a las redes. Se despliega en Vercel.
 
-> Estado: **Fase 1 (base) terminada**: encabezado, menú móvil, pie, estados, privacidad y cabeceras de seguridad. Sigue la Fase 2 (secciones del sitio). Ver `docs/PLAN_DE_CONSTRUCCION.md`.
+> Estado: **Fase 2 terminada**: el sitio completo (11 secciones, los 15 mundos con filtro y demos) funciona sin la intro. Sigue la Fase 3 (la intro: pluma, anillo y logo). Ver `docs/PLAN_DE_CONSTRUCCION.md`.
 
 ## Documentación
 

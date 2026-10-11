@@ -73,13 +73,31 @@ Corte de fecha: publicadas antes del 2026-09-26.
 
 ## Fase 2 — Acto 4 completo (el sitio sirve sin intro)
 
-- [ ] Las 13 secciones de `DISENO.md §6.3` con el contenido de `CONTENIDO.md §4`.
-- [ ] Rejilla de mundos con filtro por tramo y enlace a cada demo (`/es/demo/<slug>`).
-- [ ] Estados vacíos: opiniones, redes no configuradas, donaciones no configuradas.
-- [ ] Componente `EnlaceExterno` (siempre `noopener noreferrer`).
-- [ ] Revisión de texto: sin voseo, sin Trastienda, sin promesas apagadas (`CONTENIDO.md §0`). Buscar con `grep -riE "trastienda|ruleta|apuesta|casino|blackjack|vos |tenés|podés|jugá|elegí|probá"`.
+- [x] Las 13 secciones de `DISENO.md §6.3` con el contenido de `CONTENIDO.md §4`.
+- [x] Rejilla de mundos con filtro por tramo y enlace a cada demo (`/es/demo/<slug>`).
+- [x] Estados vacíos: opiniones, redes no configuradas, donaciones no configuradas.
+- [x] Componente `EnlaceExterno` (siempre `noopener noreferrer`).
+- [x] Revisión de texto: sin voseo, sin Trastienda, sin promesas apagadas (`CONTENIDO.md §0`). Buscar con `grep -riE "trastienda|ruleta|apuesta|casino|blackjack|vos |tenés|podés|jugá|elegí|probá"`.
 
 **Aceptación:** la página funciona entera con la intro desactivada; Lighthouse móvil ≥ 90 en rendimiento y accesibilidad; sin scroll horizontal a 375px.
+
+**Resultado (2026-10-10).** `lint` 0 · `typecheck` ok · `build` ok.
+- **Lighthouse móvil** (13.5.0, `next start`, `/`): rendimiento **92**, accesibilidad **100**, buenas prácticas 96 (solo por el 404 de `/favicon.ico`), SEO 100. LCP 2,3 s · CLS 0 · TBT 290 ms.
+- Sin scroll horizontal a 375, 768, 1024 ni 1440px. Sin errores de consola salvo el favicon. CSP: el script inicial (`data-js`) va firmado con el nonce, 0 violaciones.
+- Sin JavaScript: se ven las 11 secciones y los 15 mundos, el filtro se oculta (no serviría) y nada queda escondido. Con `reduced-motion`: sin desplazamientos ni esperas.
+- Filtro de mundos: botones con `aria-pressed`, operables con teclado, anuncian «Mostrando N mundos» (`aria-live`).
+- Búsqueda de voseo, peninsular, Trastienda, apuestas, Cometas, temporadas: sin resultados en el código (solo comentarios y la insignia aprobada «Próximamente en Google Play»).
+
+**Decisiones de la fase:**
+- Las secciones se maquetan en 12 columnas con el contenido en 8 del lado opuesto al logo (`data-logo` en cada `<section>`), listas para el logo viajero de la Fase 4. Hasta entonces, en escritorio queda ese margen libre.
+- Revelado al entrar en pantalla con un solo `IntersectionObserver` + transiciones CSS (`Revelador.tsx`), no con GSAP: menos JavaScript. Solo se oculta algo si `<html data-js>`, que lo pone un script en línea con nonce antes del primer pintado (`lib/script-inicial.ts`; la Fase 3 lo amplía para arrancar en `#inicio`).
+- Tarjetas de mundo: degradado del color del mundo mezclado como máximo al 48 % con la superficie y texto blanco al 85 % o más → **peor contraste 4,8:1** (Trigonometría), calculado para los 15 colores. Glifos forzados a forma de texto (en Windows, ⌛ salía como emoji de color).
+- Rangos con su ELO mínimo real (`calibra/src/types/database.ts`: 0, 900, 1100, 1300, 1500 y 1700).
+- El botón «Abrir Prodigia» del encabezado se oculta mientras `#inicio` está a la vista (ahí ya está el mismo botón con degradado): así hay un degradado por pantalla y el encabezado mantiene su botón en el resto (resuelve lo pendiente de la Fase 1).
+- `scripts/generar-actividad.mjs` y `datos/actividad.json` se adelantaron de la Fase 4: «El desarrollo» ya muestra total (212), día más activo y racha más larga con datos reales. El skyline sigue en la Fase 4.
+- No se sumaron componentes de 21st.dev ni librerías para las secciones: todo con Tailwind, SVG y CSS (`docs/web-presentacion/referencias/README.md §3`).
+
+**Queda para otras fases:** skyline (Fase 4), logo viajero (Fase 4), favicon e iconos (Fase 4), bajar el JavaScript inicial (GSAP con ScrollTrigger entra con el menú: ~57 KiB sin usar al cargar, Fase 4).
 
 ## Fase 3 — Actos 1 a 3 (intro) con sus caídas
 
@@ -98,7 +116,7 @@ Orden: primero lo que siempre funciona, después lo vistoso.
 ## Fase 4 — Logo viajero, skyline, pulido
 
 - [ ] Logo viajero (≥1024px) con `data-logo` por sección; oculto en «Los mundos»; quieto en móvil.
-- [ ] `scripts/generar-actividad.mjs` + `datos/actividad.json` (solo fechas y conteos) + skyline (mapa de calor → isométrico) con tabla accesible y estado vacío.
+- [ ] `scripts/generar-actividad.mjs` + `datos/actividad.json` (solo fechas y conteos; **hechos en la Fase 2**) + skyline (mapa de calor → isométrico) con tabla accesible y estado vacío.
 - [ ] SEO: metadatos, Open Graph, imagen social, sitemap, robots, iconos desde el logo.
 - [ ] Rendimiento: medir el chunk 3D, DPR, pausa fuera de pantalla, CLS. Lighthouse en `/#inicio`.
 - [ ] Accesibilidad: recorrido completo con teclado y con lector de pantalla (NVDA en Windows).

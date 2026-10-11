@@ -46,7 +46,13 @@ export default function Encabezado() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <EnlaceExterno href={urlWeb()} className={buttonVariants({ className: "hidden h-10 min-h-10 px-4 text-sm sm:inline-flex" })}>
+          <EnlaceExterno
+            href={urlWeb()}
+            className={buttonVariants({
+              className:
+                "hidden h-10 min-h-10 px-4 text-sm transition-[opacity,visibility,box-shadow] sm:inline-flex group-data-[inicio]/encabezado:invisible group-data-[inicio]/encabezado:opacity-0",
+            })}
+          >
             {t.encabezado.abrirProdigia}
           </EnlaceExterno>
           <MenuMovil

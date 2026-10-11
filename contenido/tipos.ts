@@ -63,6 +63,17 @@ export type SeccionId =
   | "desarrollo"
   | "apoya";
 
+export type RangoSlug = "bronce" | "plata" | "oro" | "platino" | "diamante" | "prodigio";
+
+/** Rango de Rankeds (calibra/src/types/database.ts, RANGOS_ELO). */
+export interface RangoDatos {
+  slug: RangoSlug;
+  /** ELO mínimo del rango. */
+  min: number;
+  color: string;
+  degradado?: readonly [string, string];
+}
+
 export interface Red {
   url: string;
   usuario: string;

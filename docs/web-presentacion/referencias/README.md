@@ -51,3 +51,5 @@
 ## 3. Otros componentes de 21st.dev
 
 El encargo pide buscar para: texto animado de las ciudades, transiciones, tarjetas y pie. Se elige en la fase de construcción con estas condiciones: se puede hacer con **GSAP + Tailwind** (sin sumar librerías como `motion`), es accesible y encaja con la marca. Cada elección se anota aquí con su enlace y su motivo.
+
+**Fase 2 (2026-10-10):** no se tomó ningún componente más. Las tarjetas (mundos, cómo se juega, apoya), el pie y las transiciones de entrada se hicieron con Tailwind, SVG y transiciones CSS siguiendo `DISENO.md` y la tarjeta real de la web (`calibra/src/components/WorldCard.tsx`: degradado de 120° del color del mundo). Motivos: sin la clave de 21st no se puede leer el código; los componentes de la galería suelen traer `motion` o efectos de vidrio, que el encargo y `BRAND.md` descartan; y cada dependencia de animación de más pesa en el rendimiento móvil.
