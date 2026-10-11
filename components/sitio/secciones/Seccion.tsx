@@ -27,7 +27,7 @@ export default function Seccion({ id, etiqueta, titulo, bajada, lado, junto, chi
   const idTitulo = `${id}-titulo`;
 
   return (
-    <section id={id} aria-labelledby={idTitulo} data-logo={lado} className="py-[clamp(96px,14vh,160px)]">
+    <section id={id} aria-labelledby={idTitulo} data-logo={lado} className="seccion-sitio py-[clamp(96px,14vh,160px)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8">
         <div
           className={cn(

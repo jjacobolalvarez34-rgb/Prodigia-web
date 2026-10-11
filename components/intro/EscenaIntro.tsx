@@ -241,19 +241,19 @@ export default function EscenaIntro() {
     }
 
     if (html.hasAttribute("data-intro-final")) {
-      // Arranca en #inicio: la intro se prepara con el navegador libre o con la
-      // primera interacción (lo que llegue antes).
-      const alInteractuar = () => void iniciar();
-      for (const evento of ["wheel", "touchstart", "keydown", "pointerdown"] as const) {
-        escuchar(evento, alInteractuar, { once: true, passive: true });
-      }
-      if ("requestIdleCallback" in window) {
-        const id = window.requestIdleCallback(() => void iniciar(), { timeout: 4000 });
-        limpiezas.push(() => window.cancelIdleCallback(id));
-      } else {
-        const id = setTimeout(() => void iniciar(), 2000);
-        limpiezas.push(() => clearTimeout(id));
-      }
+      // Arranca en #inicio: la intro se prepara recién cuando la persona sube
+      // hacia ella (o pide verla otra vez). Hasta entonces el CSS ya muestra
+      // el cuadro final y no se gasta nada en ella.
+      const ancla = document.getElementById("inicio");
+      const alSubir = () => {
+        if (!ancla || iniciada) return;
+        if (ancla.getBoundingClientRect().top > 2) void iniciar();
+      };
+      escuchar("scroll", alSubir, { passive: true });
+      escuchar(EVENTO_VER, () => {
+        html.removeAttribute("data-intro-final");
+        void iniciar();
+      });
     } else {
       void iniciar();
       // Intro ya vista y se está arriba (navegación del lado del cliente a "/"):

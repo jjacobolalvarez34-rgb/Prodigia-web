@@ -761,6 +761,13 @@
   }
 }
 
+/* Secciones del sitio: el navegador no calcula el diseño ni pinta las que
+   están fuera de pantalla hasta que hacen falta (rendimiento en móviles). */
+.seccion-sitio {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1100px;
+}
+
 /* Lo que solo sirve con JavaScript (por ejemplo, el filtro de mundos) se
    oculta sin él. Fuera de las capas para ganarle a las utilidades (flex…). */
 :root:not([data-js]) .solo-js {
