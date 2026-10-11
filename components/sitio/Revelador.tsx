@@ -2,13 +2,14 @@
 
 import { useEffect } from "react";
 
-// Un solo IntersectionObserver para todo el acto 4: marca con data-visible los
-// elementos [data-revelar] cuando entran en pantalla y el CSS hace el resto
+// Un solo IntersectionObserver para todo el acto 4 y los bloques de la intro
+// en modo quieto: marca con data-visible los elementos [data-revelar] (y
+// .intro-bloque, .intro-anillo) cuando entran en pantalla y el CSS hace el resto
 // (app/globals.css). Sin JavaScript nada se oculta: el CSS solo esconde lo que
 // se va a revelar cuando <html> tiene data-js (lo pone el script inicial).
 export default function Revelador() {
   useEffect(() => {
-    const elementos = document.querySelectorAll("[data-revelar]:not([data-visible])");
+    const elementos = document.querySelectorAll("[data-revelar]:not([data-visible]), .intro-bloque, .intro-anillo");
     if (!("IntersectionObserver" in window)) {
       elementos.forEach((el) => el.setAttribute("data-visible", ""));
       return;

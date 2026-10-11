@@ -3,6 +3,8 @@
 import { usePathname } from "next/navigation";
 import { useCallback, useSyncExternalStore, type ReactNode } from "react";
 
+import { useEnIntro } from "@/lib/posicion-intro";
+
 function suscribirScroll(avisar: () => void) {
   window.addEventListener("scroll", avisar, { passive: true });
   return () => window.removeEventListener("scroll", avisar);
@@ -16,8 +18,10 @@ let inicioVisible: boolean | null = null;
 // desenfoque leve solo cuando la página ya se desplazó (DISENO.md §6.1).
 // Marca data-inicio mientras #inicio está a la vista: ahí ya está el mismo
 // «Abrir Prodigia» con degradado, y el degradado va una vez por pantalla.
+// Durante la intro (data-en-intro) se esconde: aparece al llegar a #inicio.
 export default function EncabezadoFijo({ children }: { children: ReactNode }) {
   const ruta = usePathname();
+  const enIntro = useEnIntro();
   const conScroll = useSyncExternalStore(
     suscribirScroll,
     () => window.scrollY > 8,
@@ -57,7 +61,8 @@ export default function EncabezadoFijo({ children }: { children: ReactNode }) {
     <header
       data-con-scroll={conScroll || undefined}
       data-inicio={enInicio || undefined}
-      className="group/encabezado fixed inset-x-0 top-0 z-40 border-b border-transparent transition-[background-color,border-color] duration-300 ease-entrar data-con-scroll:border-borde/60 data-con-scroll:bg-fondo/80 data-con-scroll:backdrop-blur-md"
+      data-en-intro={enIntro || undefined}
+      className="encabezado group/encabezado fixed inset-x-0 top-0 z-40 border-b border-transparent data-con-scroll:border-borde/60 data-con-scroll:bg-fondo/80 data-con-scroll:backdrop-blur-md"
     >
       {children}
     </header>

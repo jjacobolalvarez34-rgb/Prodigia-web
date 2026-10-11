@@ -8,6 +8,7 @@ interface Props {
   colorAro?: string;
   // Sin chispa: el aro solo (la página 404, donde «la chispa se escapó»).
   conChispa?: boolean;
+  "data-logo-final"?: boolean;
 }
 
 // Port fiel de calibra/src/components/Logo.tsx: mismos paths, dasharray,
@@ -21,13 +22,13 @@ interface Props {
 // chicas perpendiculares, de tamaño y ángulo distintos, para que no haya
 // ningún eje de simetría. La apertura del anillo está centrada en el ángulo
 // donde se apoya la chispa (translate(82 44) visto desde el centro, 50 50).
-export default function Logo({ size = 32, className, colorAro = "#6C4CF1", conChispa = true }: Props) {
+export default function Logo({ size = 32, className, colorAro = "#6C4CF1", conChispa = true, ...resto }: Props) {
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const degradado = `prodigia-star-gradient-${id}`;
   const brazo = `prodigia-spark-arm-${id}`;
 
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" className={className} aria-hidden="true" focusable="false">
+    <svg width={size} height={size} viewBox="0 0 100 100" className={className} aria-hidden="true" focusable="false" {...resto}>
       <defs>
         {/* Parada intermedia cálida neutra: interpolar directo entre A794FF y
             FFC53D pasa por un rosa apagado que la marca pide evitar. */}

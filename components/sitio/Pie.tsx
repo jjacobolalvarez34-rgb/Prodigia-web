@@ -6,7 +6,7 @@ import { es } from "@/contenido/es";
 import { urlDemo, urlDocentes, urlWeb } from "@/lib/url";
 
 import EnlaceExterno from "./EnlaceExterno";
-import VerIntroOtraVez from "./VerIntroOtraVez";
+import VerIntroOtraVez, { VolverAQuieta } from "./VerIntroOtraVez";
 
 const claseEnlace = "inline-flex min-h-11 items-center text-texto-2 transition-colors hover:text-texto";
 const claseTitulo = "font-display text-etiqueta font-semibold tracking-[0.18em] text-texto-2 uppercase";
@@ -81,7 +81,10 @@ export default function Pie() {
       <div className="border-t border-borde/60">
         <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 text-etiqueta text-texto-2 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <p>{t.firma(config.autor.firma)}</p>
-          <VerIntroOtraVez etiqueta={t.verIntro} className={claseEnlace} />
+          <div className="flex flex-wrap gap-x-6">
+            <VolverAQuieta etiqueta={t.versionQuieta} className={claseEnlace} />
+            <VerIntroOtraVez etiqueta={t.verIntro} className={claseEnlace} />
+          </div>
         </div>
       </div>
     </footer>

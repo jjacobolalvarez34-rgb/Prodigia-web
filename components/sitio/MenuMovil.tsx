@@ -6,7 +6,6 @@ import { createPortal } from "react-dom";
 
 import Logo from "@/components/marca/Logo";
 import { buttonVariants } from "@/components/ui/button";
-import { gsap, useGSAP } from "@/lib/gsap";
 
 import EnlaceExterno from "./EnlaceExterno";
 
@@ -38,6 +37,15 @@ function liberarPagina() {
   document.documentElement.style.overflow = "";
 }
 
+type Gsap = typeof import("gsap").gsap;
+let gsapCargado: Promise<Gsap> | null = null;
+
+/** GSAP (solo el núcleo) en diferido; la segunda vez sale de la caché. */
+function cargarGsap() {
+  gsapCargado ??= import("gsap").then((modulo) => modulo.gsap);
+  return gsapCargado;
+}
+
 function prefiereQuieto() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -57,6 +65,7 @@ export default function MenuMovil({ enlaces, cta, instagram, textos }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const primerEnlaceRef = useRef<HTMLAnchorElement>(null);
   const devolverFoco = useRef(true);
+  const animacion = useRef<{ kill: () => void } | null>(null);
 
   const abrir = () => {
     setVisible(true);
@@ -71,56 +80,64 @@ export default function MenuMovil({ enlaces, cta, instagram, textos }: Props) {
     setAbierto(false);
   }, []);
 
-  const { context } = useGSAP(
-    () => {
-      const panel = panelRef.current;
-      if (!panel || !visible) return;
-      const items = panel.querySelectorAll("[data-item]");
-      const quieto = prefiereQuieto();
+  // Animación de apertura y cierre. GSAP se carga en diferido (se precarga al
+  // acercarse al botón): no pesa en la carga inicial de la página.
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel || !visible) return;
+    let cancelado = false;
+    const quieto = prefiereQuieto();
+    const caja = botonRef.current?.getBoundingClientRect();
+    const x = caja ? caja.left + caja.width / 2 : window.innerWidth - 40;
+    const y = caja ? caja.top + caja.height / 2 : 32;
 
+    if (abierto) {
+      bloquearPagina();
+      // Arranca cerrado mientras llega GSAP (si aún no estaba precargado).
+      if (quieto) panel.style.opacity = "0";
+      else panel.style.clipPath = `circle(0px at ${x}px ${y}px)`;
+      primerEnlaceRef.current?.focus();
+    }
+
+    cargarGsap().then((gsap) => {
+      if (cancelado) return;
+      animacion.current?.kill();
       if (abierto) {
-        bloquearPagina();
-        const caja = botonRef.current?.getBoundingClientRect();
-        const x = caja ? caja.left + caja.width / 2 : window.innerWidth - 40;
-        const y = caja ? caja.top + caja.height / 2 : 32;
+        const items = panel.querySelectorAll("[data-item]");
         const radio = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-
-        if (quieto) {
-          gsap.fromTo(panel, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" });
-        } else {
-          gsap
-            .timeline()
-            .fromTo(
-              panel,
-              { clipPath: `circle(0px at ${x}px ${y}px)` },
-              { clipPath: `circle(${radio}px at ${x}px ${y}px)`, duration: 0.6, ease: "power3.inOut" },
-            )
-            .fromTo(
-              items,
-              { yPercent: 40, opacity: 0 },
-              { yPercent: 0, opacity: 1, duration: 0.45, stagger: 0.04, ease: "power3.out" },
-              "-=0.32",
-            );
-        }
-        primerEnlaceRef.current?.focus();
-      } else {
-        const terminar = () => {
-          gsap.set(panel, { clearProps: "clipPath,opacity" });
-          setVisible(false);
-          if (devolverFoco.current) botonRef.current?.focus();
-        };
-        if (quieto) {
-          gsap.to(panel, { opacity: 0, duration: 0.15, ease: "power2.in", onComplete: terminar });
-        } else {
-          const caja = botonRef.current?.getBoundingClientRect();
-          const x = caja ? caja.left + caja.width / 2 : window.innerWidth - 40;
-          const y = caja ? caja.top + caja.height / 2 : 32;
-          gsap.to(panel, { clipPath: `circle(0px at ${x}px ${y}px)`, duration: 0.4, ease: "power2.in", onComplete: terminar });
-        }
+        animacion.current = quieto
+          ? gsap.fromTo(panel, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" })
+          : gsap
+              .timeline()
+              .fromTo(
+                panel,
+                { clipPath: `circle(0px at ${x}px ${y}px)` },
+                { clipPath: `circle(${radio}px at ${x}px ${y}px)`, duration: 0.6, ease: "power3.inOut" },
+              )
+              .fromTo(
+                items,
+                { yPercent: 40, opacity: 0 },
+                { yPercent: 0, opacity: 1, duration: 0.45, stagger: 0.04, ease: "power3.out" },
+                "-=0.32",
+              );
+        return;
       }
-    },
-    { dependencies: [abierto, visible], scope: panelRef },
-  );
+      const terminar = () => {
+        gsap.set(panel, { clearProps: "clipPath,opacity" });
+        setVisible(false);
+        if (devolverFoco.current) botonRef.current?.focus();
+      };
+      animacion.current = quieto
+        ? gsap.to(panel, { opacity: 0, duration: 0.15, ease: "power2.in", onComplete: terminar })
+        : gsap.to(panel, { clipPath: `circle(0px at ${x}px ${y}px)`, duration: 0.4, ease: "power2.in", onComplete: terminar });
+    });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [abierto, visible]);
+
+  useEffect(() => () => animacion.current?.kill(), []);
 
   // Si la ventana crece a escritorio con el menú abierto, se cierra (el botón
   // desaparece a partir de 1024px).
@@ -156,15 +173,14 @@ export default function MenuMovil({ enlaces, cta, instagram, textos }: Props) {
   };
 
   // Onda: el color recorre el texto del enlace; con puntero fino, los vecinos
-  // se apartan unos píxeles. Sin movimiento si se prefiere quieto. Las
-  // animaciones se suman al contexto de useGSAP para revertirse al desmontar.
+  // se apartan unos píxeles. Sin movimiento si se prefiere quieto.
   const onda = (indice: number, apartar: boolean) => {
     const panel = panelRef.current;
     if (!panel || prefiereQuieto()) return;
     const textos = panel.querySelectorAll<HTMLElement>("[data-onda]");
     const actual = textos[indice];
     if (!actual) return;
-    context.add(() => {
+    void cargarGsap().then((gsap) => {
       gsap.fromTo(actual, { backgroundPosition: "100% 0" }, { backgroundPosition: "0% 0", duration: 0.7, ease: "power2.out", overwrite: "auto" });
       if (!apartar) return;
       textos.forEach((texto, j) => {
@@ -178,7 +194,7 @@ export default function MenuMovil({ enlaces, cta, instagram, textos }: Props) {
   const calmar = () => {
     const panel = panelRef.current;
     if (!panel) return;
-    context.add(() => {
+    void cargarGsap().then((gsap) => {
       gsap.to(panel.querySelectorAll("[data-onda]"), { x: 0, duration: 0.35, ease: "power3.out" });
     });
   };
@@ -260,6 +276,9 @@ export default function MenuMovil({ enlaces, cta, instagram, textos }: Props) {
         ref={botonRef}
         type="button"
         onClick={abrir}
+        onPointerEnter={() => void cargarGsap()}
+        onFocus={() => void cargarGsap()}
+        onTouchStart={() => void cargarGsap()}
         aria-label={textos.abrir}
         aria-expanded={abierto}
         aria-controls={montado ? ID_PANEL : undefined}

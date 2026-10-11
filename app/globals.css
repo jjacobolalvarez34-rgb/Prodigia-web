@@ -363,6 +363,404 @@
   }
 }
 
+@layer components {
+  /* ══ Intro (actos 1 a 3) ═════════════════════════════════════════════════
+     Sin JavaScript o con reduced-motion (data-intro="quieto"): bloques apilados
+     que aparecen con fundidos, anillo completo y logo final.
+     data-intro="animada" (lo pone el script inicial antes de pintar): una pista
+     alta con un único escenario sticky; components/intro/EscenaIntro.tsx mueve
+     todo según el progreso del scroll. Nunca se secuestra el scroll. */
+  .intro {
+    position: relative;
+  }
+
+  /* Ancla de #inicio: el último alto de pantalla de la intro (progreso 1). */
+  .intro-ancla {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 100svh;
+    pointer-events: none;
+    scroll-margin-top: -5rem;
+  }
+
+  .intro-escenario {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .intro-textos {
+    display: contents;
+  }
+
+  .intro-bloque {
+    width: 100%;
+    max-width: 46rem;
+    margin-inline: auto;
+    padding: clamp(64px, 12vh, 128px) 1rem;
+  }
+
+  .intro-lienzo,
+  .intro-capa3d,
+  .intro-pluma,
+  .intro-destello,
+  .intro-onda,
+  .intro-velo,
+  .intro-carga {
+    display: none;
+  }
+
+  /* Anillo 2D en reposo (quieto y sin JS): completo, en perspectiva, quieto. */
+  .intro-anillo {
+    width: min(78vw, 26rem);
+    aspect-ratio: 1;
+    margin: clamp(32px, 6vh, 64px) auto;
+    perspective: 1200px;
+  }
+
+  .anillo-giro {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform: rotateX(56deg);
+  }
+
+  .anillo-capa,
+  .anillo-cara {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .anillo-capa {
+    transform: translateZ(calc(var(--k) * -0.22rem));
+  }
+
+  .anillo-ciudad .halo {
+    fill: var(--c);
+    opacity: 0.32;
+  }
+
+  .anillo-ciudad .punto {
+    fill: var(--c);
+  }
+
+  /* La frase de la pluma. */
+  .intro-frase {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-display);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+    max-width: 18ch;
+  }
+
+  .intro-pluma-quieta {
+    width: clamp(44px, 9vw, 72px);
+    height: auto;
+  }
+
+  .intro-ciudad-glifo {
+    font-variant-emoji: text;
+  }
+
+  /* ── Modo animado ─────────────────────────────────────────────────────── */
+  :root[data-intro="animada"] .intro {
+    height: 760svh;
+  }
+
+  :root[data-intro="animada"] .intro-escenario {
+    display: block;
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  :root[data-intro="animada"] .intro-lienzo,
+  :root[data-intro="animada"] .intro-capa3d {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  :root[data-intro="animada"] .intro-capa3d {
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-entrar);
+  }
+
+  :root[data-intro="animada"] .intro-anillo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 160px;
+    margin: 0;
+    perspective: none;
+    transition: opacity 0.6s var(--ease-entrar);
+  }
+
+  :root[data-intro="animada"] .anillo-giro {
+    transform: none;
+    transform-origin: 50% 50%;
+    will-change: transform;
+  }
+
+  :root[data-intro="animada"] .intro-pluma {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: clamp(46px, 5.5vw, 76px);
+    transform-origin: 50.3% 94.3%;
+    will-change: transform;
+    pointer-events: none;
+  }
+
+  :root[data-intro="animada"] .intro-textos {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-items: end;
+    padding: 1rem 1rem calc(4.5rem + env(safe-area-inset-bottom, 0px));
+    pointer-events: none;
+  }
+
+  :root[data-intro="animada"] .intro-bloque {
+    grid-area: 1 / 1;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    will-change: opacity, transform;
+  }
+
+  :root[data-intro="animada"] .intro-bloque-frase {
+    align-self: center;
+    justify-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    opacity: 1;
+  }
+
+  :root[data-intro="animada"] .intro-pluma-quieta {
+    display: none;
+  }
+
+  :root[data-intro="animada"] .intro-final {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+  }
+
+  :root[data-intro="animada"] .intro-velo {
+    display: block;
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 64%;
+    background: linear-gradient(to top, var(--color-fondo) 62%, rgb(9 12 20 / 0.85) 80%, transparent);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :root[data-intro="animada"] .intro-destello,
+  :root[data-intro="animada"] .intro-onda {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :root[data-intro="animada"] .intro-destello {
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(
+      circle,
+      rgb(255 247 230 / 0.95) 0%,
+      rgb(255 197 61 / 0.55) 28%,
+      rgb(124 92 255 / 0.18) 55%,
+      transparent 70%
+    );
+  }
+
+  :root[data-intro="animada"] .intro-onda {
+    width: 240px;
+    height: 240px;
+    border: 2px solid rgb(255 197 61 / 0.8);
+  }
+
+  :root[data-intro="animada"] .intro-carga {
+    position: absolute;
+    left: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  :root[data-intro="animada"] .intro[data-cargando-3d] .intro-carga {
+    display: flex;
+  }
+
+  /* El 3D ya está: el lienzo 3D aparece y el anillo 2D se retira. */
+  .intro[data-capa="3d"] .intro-capa3d {
+    opacity: 1;
+  }
+
+  .intro[data-capa="3d"] .intro-anillo {
+    opacity: 0;
+  }
+
+  /* Escritorio: texto en una columna a la izquierda, anillo a la derecha. */
+  @media (min-width: 1024px) {
+    :root[data-intro="animada"] .intro {
+      height: 900svh;
+    }
+
+    :root[data-intro="animada"] .intro-textos {
+      align-items: center;
+      padding: 0 0 0 clamp(2rem, 7vw, 7rem);
+      grid-template-columns: min(36ch, 38vw);
+    }
+
+    :root[data-intro="animada"] .intro-bloque-frase {
+      grid-column: 1;
+      justify-self: start;
+      width: calc(100vw - 2 * clamp(2rem, 7vw, 7rem));
+    }
+
+    :root[data-intro="animada"] .intro-velo {
+      display: none;
+    }
+  }
+
+  /* Se arranca en #inicio (intro ya vista o #inicio en la URL): antes de que
+     llegue el JavaScript, el escenario ya muestra el cuadro final. */
+  :root[data-intro="animada"][data-intro-final] .intro-bloque-frase {
+    opacity: 0;
+  }
+
+  :root[data-intro="animada"][data-intro-final] .intro-final {
+    opacity: 1;
+  }
+
+  :root[data-intro="animada"][data-intro-final] .intro-anillo {
+    opacity: 0;
+  }
+
+  /* La frase la escribe la pluma: en modo animado las letras empiezan ocultas
+     (si no, se verían enteras un instante y luego se borrarían). */
+  :root[data-intro="animada"]:not([data-intro-final]) [data-letra] {
+    opacity: 0;
+  }
+
+  /* Quieto: cada bloque aparece con un fundido de 300 ms al entrar. */
+  :root[data-intro="quieto"] .intro-bloque:not([data-visible]),
+  :root[data-intro="quieto"] .intro-anillo:not([data-visible]) {
+    opacity: 0;
+  }
+
+  :root[data-intro="quieto"] .intro-bloque,
+  :root[data-intro="quieto"] .intro-anillo {
+    transition: opacity 0.3s var(--ease-entrar);
+  }
+
+  /* ── Botón «Saltar intro» (DISENO.md §3) ──────────────────────────────── */
+  .boton-saltar {
+    position: fixed;
+    right: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    z-index: 45;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 6px 12px;
+    border: 1px solid var(--color-borde);
+    border-radius: 999px;
+    background: rgb(18 23 42 / 0.6);
+    color: rgb(136 146 176 / 0.8);
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    transition:
+      color 0.2s,
+      border-color 0.2s,
+      opacity 0.2s,
+      visibility 0.2s;
+  }
+
+  /* Área táctil de 44×44 aunque se vea pequeño. */
+  .boton-saltar::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+
+  .boton-saltar:hover,
+  .boton-saltar:focus-visible {
+    color: var(--color-texto);
+    border-color: rgb(124 92 255 / 0.5);
+  }
+
+  :root[data-js] .boton-saltar[data-oculto] {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  /* El encabezado aparece al llegar a #inicio (DISENO.md §6.1). Solo con JS:
+     sin JS siempre está a la vista. */
+  .encabezado {
+    transition:
+      transform 0.25s var(--ease-entrar),
+      visibility 0.25s,
+      background-color 0.3s,
+      border-color 0.3s;
+  }
+
+  :root[data-js] .encabezado[data-en-intro] {
+    transform: translateY(-100%);
+    visibility: hidden;
+  }
+
+  /* Si se arranca en #inicio, el encabezado ya está desde el primer pintado
+     (el servidor no sabe dónde va a quedar el scroll). */
+  :root[data-js][data-intro-final] .encabezado[data-en-intro] {
+    transform: none;
+    visibility: visible;
+  }
+}
+
+/* Aviso «Ver con animación»: solo en el modo quieto (con JS). */
+:root:not([data-intro="quieto"]) .solo-quieto {
+  display: none;
+}
+
+/* «Volver a la versión quieta»: solo si se eligió la animación con el
+   sistema pidiendo reducir el movimiento. */
+:root:not([data-movimiento-elegido]) .solo-eleccion {
+  display: none;
+}
+
+@media not (prefers-reduced-motion: reduce) {
+  .solo-eleccion {
+    display: none;
+  }
+}
+
 /* Lo que solo sirve con JavaScript (por ejemplo, el filtro de mundos) se
    oculta sin él. Fuera de las capas para ganarle a las utilidades (flex…). */
 :root:not([data-js]) .solo-js {
@@ -384,5 +782,13 @@
 
   :root[data-js] [data-revelar]:not([data-visible]) {
     transform: none;
+  }
+
+  /* Los fundidos de opacidad sí se mantienen (300 ms): no son movimiento. */
+  :root[data-js] [data-revelar],
+  :root[data-intro="quieto"] .intro-bloque,
+  :root[data-intro="quieto"] .intro-anillo {
+    transition-property: opacity !important;
+    transition-duration: 0.3s !important;
   }
 }

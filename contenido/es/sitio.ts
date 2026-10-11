@@ -274,6 +274,7 @@ export const sitio = {
     instagram: "Instagram",
     correo: "Correo",
     verIntro: "Ver la intro otra vez",
+    versionQuieta: "Volver a la versión quieta",
     firma: (firma: string) => `Hecho por ${firma}, con Claude Code.`,
   },
 

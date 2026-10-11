@@ -31,6 +31,8 @@ export interface MundoDatos {
   base: string;
   /** Versión neón: la que se usa para texto y luces. */
   neon: string;
+  /** Glifo principal (etiquetas de ciudad en la intro). */
+  glifo: string;
   glifos: readonly string[];
 }
 
