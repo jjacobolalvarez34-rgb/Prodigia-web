@@ -59,6 +59,7 @@ export function crearRender2D(raiz: HTMLElement) {
   const capas = qq<SVGSVGElement>(".anillo-capa");
   const trazos = qq<SVGCircleElement>("[data-trazo]");
   const chispa = q<SVGGElement>("[data-chispa]");
+  const cabeza = q<SVGGElement>("[data-cabeza]");
   const pluma = q<HTMLElement>(".intro-pluma")!;
   const destello = q<HTMLElement>(".intro-destello");
   const onda = q<HTMLElement>(".intro-onda");
@@ -261,7 +262,7 @@ export function crearRender2D(raiz: HTMLElement) {
       cache.set("dash", dash);
       trazos.forEach((trazo) => trazo.setAttribute("stroke-dasharray", dash));
     }
-    const profundidad = ((1 - kLogo) * 0.9).toFixed(3);
+    const profundidad = ((1 - kLogo) * 0.55).toFixed(3);
     if (cache.get("prof") !== profundidad) {
       cache.set("prof", profundidad);
       capas.forEach((capa) => {
@@ -296,6 +297,22 @@ export function crearRender2D(raiz: HTMLElement) {
         estilo(etiqueta, "transform", `translate3d(0, ${((1 - visible) * 10).toFixed(1)}px, 0)`);
       }
     });
+
+    // ── Tinta fresca en la punta del trazo (mientras escribe) ──
+    if (cabeza) {
+      const brillo = fundido(p, 0.066, 0.08, 0.6, 0.645);
+      const punto = puntoDelAro(ARO.anguloInicio + a * ARO.anguloArco);
+      const transformacion = `translate(${punto.x.toFixed(2)} ${punto.y.toFixed(2)})`;
+      if (cache.get("cabeza") !== transformacion) {
+        cache.set("cabeza", transformacion);
+        cabeza.setAttribute("transform", transformacion);
+      }
+      const opacidad = brillo.toFixed(3);
+      if (cache.get("cabeza-op") !== opacidad) {
+        cache.set("cabeza-op", opacidad);
+        cabeza.setAttribute("opacity", opacidad);
+      }
+    }
 
     // ── Chispa: aparece cuando la pluma se posa en la apertura ──
     const kChispa = salida(dentroDe(p, [0.885, 0.93]));

@@ -6,7 +6,7 @@ import { TRAMOS } from "@/contenido/tramos";
 import type { MundoSlug } from "@/contenido/tipos";
 
 /** Altura de la pista de scroll de la intro (en svh). */
-export const ALTURA_PISTA = { escritorio: 900, movil: 760 } as const;
+export const ALTURA_PISTA = { escritorio: 1400, movil: 1150 } as const;
 
 /** Momentos de la intro sobre el progreso 0 → 1. */
 export const MOMENTOS = {

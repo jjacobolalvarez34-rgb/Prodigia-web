@@ -1,6 +1,5 @@
 import Pluma from "@/components/marca/Pluma";
 import VerConAnimacion from "@/components/intro/VerConAnimacion";
-import { IconoFlechaAbajo } from "@/components/sitio/iconos";
 import { config } from "@/contenido/config";
 import { es } from "@/contenido/es";
 import { MUNDO_POR_SLUG, MUNDOS } from "@/contenido/mundos";
@@ -30,6 +29,30 @@ function colorChispa(t: number) {
   return `rgb(${c[0]} ${c[1]} ${c[2]})`;
 }
 
+// Trazo a mano bajo «divertido»: la pluma lo dibuja al terminar la frase.
+function Subrayado() {
+  return (
+    <svg data-subrayado className="intro-subrayado" viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="intro-subrayado-oro" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#B9A8FF" />
+          <stop offset="45%" stopColor="#FFC53D" />
+          <stop offset="100%" stopColor="#FFB627" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M4 13 C 46 4, 104 19, 196 7"
+        pathLength={1}
+        fill="none"
+        stroke="url(#intro-subrayado-oro)"
+        strokeWidth={3.5}
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
 function Frase() {
   const t = es.intro.frase;
   const completa = t.antes + t.resaltada + t.despues;
@@ -51,15 +74,29 @@ function Frase() {
           <span key={i}>
             {i > 0 && " "}
             <span className="whitespace-nowrap">
-              {[...palabra.texto].map((letra, j) => {
-                const esResaltada = palabra.resaltada && j < t.resaltada.length;
-                const color = esResaltada ? colorChispa(j / (t.resaltada.length - 1)) : undefined;
-                return (
-                  <span key={j} data-letra style={color ? { color } : undefined}>
+              {palabra.resaltada ? (
+                <>
+                  <span className="relative inline-block">
+                    {[...t.resaltada].map((letra, j) => (
+                      <span key={j} data-letra style={{ color: colorChispa(j / (t.resaltada.length - 1)) }}>
+                        {letra}
+                      </span>
+                    ))}
+                    <Subrayado />
+                  </span>
+                  {[...t.despues].map((letra, j) => (
+                    <span key={`d${j}`} data-letra>
+                      {letra}
+                    </span>
+                  ))}
+                </>
+              ) : (
+                [...palabra.texto].map((letra, j) => (
+                  <span key={j} data-letra>
                     {letra}
                   </span>
-                );
-              })}
+                ))
+              )}
             </span>
           </span>
         ))}
@@ -79,9 +116,11 @@ export default function TextosIntro() {
         <VerConAnimacion aviso={t.movimiento.aviso} etiqueta={t.movimiento.activar} />
         <Frase />
         <Pluma className="intro-pluma-quieta mt-6" />
-        <p className="intro-deslizar mt-8 inline-flex items-center gap-2 text-etiqueta text-texto-2">
+        <p className="intro-deslizar mt-10 inline-flex flex-col items-center gap-3 text-etiqueta tracking-[0.12em] text-texto-2 uppercase">
+          <span className="intro-raton" aria-hidden="true">
+            <span />
+          </span>
           {t.deslizar}
-          <IconoFlechaAbajo className="size-4 motion-safe:animate-bounce" />
         </p>
       </div>
 

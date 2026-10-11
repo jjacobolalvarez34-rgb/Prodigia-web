@@ -113,6 +113,13 @@ Orden: primero lo que siempre funciona, después lo vistoso.
 
 **Aceptación:** se puede subir y bajar libremente con rueda, barra, teclado (Espacio, Re Pág/Av Pág, flechas) y gestos; las tres versiones muestran el mismo contenido; el texto es legible antes de que cargue three.js; nada de partículas encima del texto; el botón Saltar se ve desde el primer segundo y lleva al logo final.
 
+**Estado al pausar (2026-10-10, a pedido del dueño).** Hechos y con commit: tareas 1 a 7 (modos quieto, ligero y completo; Saltar; carga del 3D), mejora gráfica del 3D (bloom, losa con suelo y rebordes, ciudades sobre el suelo), opción «Ver con animación» para quien tiene reducido el movimiento, Lighthouse móvil 92 en `/#inicio`, sin `loading.tsx` (rompía la página sin JS con la CSP de nonce). Pista más larga (1400svh / 1150svh).
+Pendiente al retomar (pedido del dueño):
+- **Explosión del logo por tiempo** (no atada al scroll): destello, 3 ondas, rayos, fogonazo suave, chispas con estela, logo con rebote y aura; textos finales en cascada. Los elementos ya están en el DOM (`.intro-aura`, `.intro-rayos`, `.intro-fogonazo`, 3 `.intro-onda`) y ocultos por CSS; falta el CSS y la línea de tiempo en `render2d.ts` (y quitar el destello atado al scroll).
+- **Acto 1:** la pluma entra volando antes de escribir; letras con brillo de tinta dorada que se enfría; la pluma dibuja el subrayado de «divertido» (hoy se ve completo, sin animar); el reposo de la pluma pasa a ser el final del subrayado (también en `escena3d/director.ts`).
+- **Anillo 2D nítido:** dibujarlo al tamaño grande y achicarlo al final (hoy se agranda un SVG chico y se ve borroso).
+- Cerrar la fase en este documento (resultado y decisiones) y seguir con las Fases 4 y 5.
+
 ## Fase 4 — Logo viajero, skyline, pulido
 
 - [ ] Logo viajero (≥1024px) con `data-logo` por sección; oculto en «Los mundos»; quieto en móvil.

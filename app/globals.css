@@ -437,16 +437,21 @@
   }
 
   .anillo-capa {
-    transform: translateZ(calc(var(--k) * -0.22rem));
+    transform: translateZ(calc(var(--k) * -0.14rem));
   }
 
   .anillo-ciudad .halo {
     fill: var(--c);
-    opacity: 0.32;
+    opacity: 0.22;
   }
 
   .anillo-ciudad .punto {
     fill: var(--c);
+  }
+
+  .anillo-ciudad .nucleo {
+    fill: #fff;
+    opacity: 0.85;
   }
 
   /* La frase de la pluma. */
@@ -471,7 +476,7 @@
 
   /* ── Modo animado ─────────────────────────────────────────────────────── */
   :root[data-intro="animada"] .intro {
-    height: 760svh;
+    height: 1150svh;
   }
 
   :root[data-intro="animada"] .intro-escenario {
@@ -639,7 +644,7 @@
   /* Escritorio: texto en una columna a la izquierda, anillo a la derecha. */
   @media (min-width: 1024px) {
     :root[data-intro="animada"] .intro {
-      height: 900svh;
+      height: 1400svh;
     }
 
     :root[data-intro="animada"] .intro-textos {
@@ -780,6 +785,58 @@
 .seccion-sitio {
   content-visibility: auto;
   contain-intrinsic-size: auto 1100px;
+}
+
+/* Subrayado a mano bajo «divertido» (por ahora se ve completo; la animación
+   del trazo con la pluma queda pendiente). */
+.intro-subrayado {
+  position: absolute;
+  left: -2%;
+  top: 86%;
+  width: 104%;
+  height: 0.28em;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Indicador de scroll: un ratón con una gota dorada que baja. */
+.intro-raton {
+  display: inline-flex;
+  justify-content: center;
+  width: 22px;
+  height: 34px;
+  padding-top: 6px;
+  border: 1.5px solid rgb(136 146 176 / 0.6);
+  border-radius: 999px;
+}
+
+.intro-raton > span {
+  width: 3px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--color-oro-claro);
+  animation: raton 1.6s var(--ease-entrar) infinite;
+}
+
+@keyframes raton {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Piezas de la nueva explosión del logo: pendientes (no se muestran aún). */
+.intro-aura,
+.intro-rayos,
+.intro-fogonazo {
+  display: none;
 }
 
 /* Lo que solo sirve con JavaScript (por ejemplo, el filtro de mundos) se

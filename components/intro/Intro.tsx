@@ -18,11 +18,17 @@ export default function Intro() {
     <div id="intro" className="intro">
       <BotonSaltar etiqueta={t.saltar} />
       <div className="intro-escenario">
-        <canvas className="intro-lienzo" aria-hidden="true" />
         <div className="intro-capa3d" aria-hidden="true" />
+        <canvas className="intro-lienzo" aria-hidden="true" />
         <Anillo2D />
+        {/* Explosión del logo (acto 3) y aura que queda detrás del logo. */}
+        <div className="intro-aura" aria-hidden="true" />
+        <div className="intro-rayos" aria-hidden="true" />
         <div className="intro-destello" aria-hidden="true" />
         <div className="intro-onda" aria-hidden="true" />
+        <div className="intro-onda intro-onda-violeta" aria-hidden="true" />
+        <div className="intro-onda" aria-hidden="true" />
+        <div className="intro-fogonazo" aria-hidden="true" />
         <div className="intro-velo" aria-hidden="true" />
         <TextosIntro />
         <div className="intro-pluma" aria-hidden="true">
