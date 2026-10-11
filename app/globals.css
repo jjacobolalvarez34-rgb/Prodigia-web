@@ -521,6 +521,7 @@
     transform-origin: 50.3% 94.3%;
     will-change: transform;
     pointer-events: none;
+    filter: drop-shadow(0 0 10px rgb(255 182 39 / 0.45));
   }
 
   :root[data-intro="animada"] .intro-textos {
@@ -611,6 +612,19 @@
 
   :root[data-intro="animada"] .intro[data-cargando-3d] .intro-carga {
     display: flex;
+  }
+
+  /* El lienzo 3D es opaco: encima lleva las mismas nebulosas y viñeta que el
+     cielo del sitio, para que el cambio 2D → 3D no se note en el fondo. */
+  :root[data-intro="animada"] .intro-capa3d::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(ellipse 120% 90% at 50% 40%, transparent 55%, rgb(5 7 13 / 0.75) 100%),
+      radial-gradient(ellipse 45% 35% at 15% 20%, rgb(124 92 255 / 0.09), transparent 70%),
+      radial-gradient(ellipse 40% 30% at 88% 75%, rgb(124 92 255 / 0.07), transparent 70%);
   }
 
   /* El 3D ya está: el lienzo 3D aparece y el anillo 2D se retira. */

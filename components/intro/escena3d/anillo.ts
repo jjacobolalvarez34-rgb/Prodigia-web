@@ -2,14 +2,16 @@ import * as THREE from "three";
 
 import { ARO } from "@/lib/progreso-intro";
 
-// Anillo 3D con volumen (DISENO.md §2.2): una banda tipo Halo con cara
-// interior (donde están las ciudades), cara exterior y dos paredes, que se
-// traza con el scroll (drawRange) y al final se aplana en el aro del logo.
+// Anillo 3D con volumen (DISENO.md §2.2): un mundo-anillo visto desde arriba
+// en perspectiva. Su perfil (el corte) es una losa con un suelo ancho entre dos
+// rebordes, el de afuera y el de adentro; las ciudades viven sobre el suelo, así
+// que se ven durante todo el recorrido. Se traza con el scroll (drawRange) y al
+// final se aplana en el aro del logo, que es exactamente ese suelo.
 //
-// La forma no está en la geometría: cada vértice solo sabe su ángulo (fracción
-// del arco), su esquina del perfil y su cara; el shader calcula la posición con
-// uniformes (radios y media altura). Así la banda puede convertirse en el aro
-// plano del logo sin rehacer la geometría (decisión D6, ampliada).
+// La forma no está en la geometría: cada vértice solo sabe su fracción del
+// arco, su punto del perfil y su cara; el shader calcula la posición con un
+// perfil de 8 puntos que llega por uniforme (radio, altura). Así la losa se
+// vuelve el aro plano del logo sin rehacer la geometría (decisión D6, ampliada).
 //
 // Convención: el anillo está en el plano XZ; el ángulo del logo α (horario en
 // pantalla, 0° = derecha) va a (cos α, 0, sin α). Visto desde arriba, con la
@@ -20,22 +22,62 @@ export const SEGMENTOS = 256;
 export const RADIO = 10;
 /** El aro del logo: interior 27/41 del exterior. */
 export const RADIO_INTERIOR_LOGO = (RADIO * (ARO.radio - ARO.grosor / 2)) / (ARO.radio + ARO.grosor / 2);
-/** Banda tipo Halo: grosor de la pared y media altura. */
-export const GROSOR_BANDA = 0.55;
-export const MEDIA_ALTURA_BANDA = 1.45;
 
-const INDICES_TAPAS = 12;
-const INDICES_POR_SEGMENTO = 24;
+/** Medidas del perfil mientras se traza (unidades del mundo). */
+export const PERFIL = {
+  interior: 7.1,
+  /** Media altura de la losa: el suelo está en +losa. */
+  losa: 0.32,
+  /** Altura y ancho de los rebordes sobre el suelo. */
+  reborde: 0.34,
+  anchoReborde: 0.26,
+} as const;
 
-// Esquinas del perfil: A=(interior, abajo) B=(exterior, abajo) C=(exterior,
-// arriba) D=(interior, arriba). Caras: 0 abajo, 1 afuera, 2 arriba, 3 adentro,
-// 4 tapa del comienzo, 5 tapa del final (sigue al trazo).
-const CARAS: [number, number][] = [
-  [0, 1],
-  [1, 2],
-  [2, 3],
-  [3, 0],
+/** Altura del suelo (donde se apoyan las ciudades) y ancho útil. */
+export const SUELO = {
+  altura: PERFIL.losa,
+  desde: PERFIL.interior + PERFIL.anchoReborde,
+  hasta: RADIO - PERFIL.anchoReborde,
+} as const;
+
+const PUNTOS = 8;
+// Puntos del perfil (r, y): A abajo-adentro, B abajo-afuera, C tope del reborde
+// de afuera, D su lado interno, E suelo-afuera, F suelo-adentro, G tope del
+// reborde de adentro, H arriba-adentro. Caras: de cada punto al siguiente.
+// 0 abajo · 1 pared de afuera · 2 tope de afuera · 3 lado interno de afuera ·
+// 4 suelo · 5 lado interno de adentro · 6 tope de adentro · 7 pared de adentro.
+// Tapas: 8 la del comienzo, 9 la del final (sigue al trazo).
+const TRIANGULOS_TAPA = [
+  [0, 1, 4],
+  [0, 4, 5],
+  [1, 2, 3],
+  [1, 3, 4],
+  [0, 5, 6],
+  [0, 6, 7],
 ];
+const INDICES_TAPAS = TRIANGULOS_TAPA.length * 3 * 2;
+const INDICES_POR_SEGMENTO = PUNTOS * 6;
+
+/** Perfil (8 puntos r, y) para una mezcla k entre la losa (0) y el aro plano del logo (1). */
+export function perfil(k: number, salida: THREE.Vector2[]) {
+  const m = (a: number, b: number) => a + (b - a) * k;
+  const interior = m(PERFIL.interior, RADIO_INTERIOR_LOGO);
+  const losa = m(PERFIL.losa, 0.03);
+  const reborde = m(PERFIL.reborde, 0);
+  const ancho = m(PERFIL.anchoReborde, 0);
+  const puntos: [number, number][] = [
+    [interior, -losa],
+    [RADIO, -losa],
+    [RADIO, losa + reborde],
+    [RADIO - ancho, losa + reborde],
+    [RADIO - ancho, losa],
+    [interior + ancho, losa],
+    [interior + ancho, losa + reborde],
+    [interior, losa + reborde],
+  ];
+  puntos.forEach(([r, y], i) => salida[i].set(r, y));
+  return salida;
+}
 
 export function crearGeometriaAnillo() {
   const angulo: number[] = [];
@@ -51,26 +93,26 @@ export function crearGeometriaAnillo() {
 
   // Tapas primero: así siempre entran en el drawRange.
   for (const [c, a] of [
-    [4, 0],
-    [5, 1],
+    [8, 0],
+    [9, 1],
   ]) {
-    const v = [0, 1, 2, 3].map((e) => vertice(a, e, c));
-    indices.push(v[0], v[1], v[2], v[0], v[2], v[3]);
+    const v = Array.from({ length: PUNTOS }, (_, e) => vertice(a, e, c));
+    for (const [x, y, z] of TRIANGULOS_TAPA) indices.push(v[x], v[y], v[z]);
   }
 
   // Caras laterales: dos vértices por cara y por paso del arco.
   const inicioCara: number[] = [];
-  for (let f = 0; f < 4; f++) {
+  for (let f = 0; f < PUNTOS; f++) {
     inicioCara.push(angulo.length);
     for (let i = 0; i <= SEGMENTOS; i++) {
-      vertice(i / SEGMENTOS, CARAS[f][0], f);
-      vertice(i / SEGMENTOS, CARAS[f][1], f);
+      vertice(i / SEGMENTOS, f, f);
+      vertice(i / SEGMENTOS, (f + 1) % PUNTOS, f);
     }
   }
   // Índices ordenados por paso del arco (y dentro, por cara): el drawRange
-  // avanza a lo largo del aro en las cuatro caras a la vez.
+  // avanza a lo largo del aro en todas las caras a la vez.
   for (let i = 0; i < SEGMENTOS; i++) {
-    for (let f = 0; f < 4; f++) {
+    for (let f = 0; f < PUNTOS; f++) {
       const a = inicioCara[f] + i * 2;
       const b = a + 2;
       indices.push(a, a + 1, b, a + 1, b + 1, b);
@@ -100,41 +142,49 @@ attribute float aCara;
 uniform float uInicio;
 uniform float uArco;
 uniform float uFin;
-uniform float uRadioInterior;
-uniform float uRadioExterior;
-uniform float uMediaAltura;
+uniform vec2 uPerfil[8];
 varying vec3 vNormal;
 varying vec3 vMundo;
+varying vec3 vLocal;
 varying float vCara;
-varying float vAltura;
+varying float vFraccion;
 
 void main() {
-  float fraccion = aCara > 4.5 ? uFin : aAngulo;
+  float fraccion = aCara > 8.5 ? uFin : aAngulo;
   float ang = uInicio + fraccion * uArco;
   float c = cos(ang);
   float s = sin(ang);
-  bool interior = aEsquina < 0.5 || aEsquina > 2.5;
-  float r = interior ? uRadioInterior : uRadioExterior;
-  float y = aEsquina < 1.5 ? -uMediaAltura : uMediaAltura;
-  vec3 posicion = vec3(r * c, y, r * s);
+  int e = int(aEsquina + 0.5);
+  vec2 p = uPerfil[e];
+  vec3 posicion = vec3(p.x * c, p.y, p.x * s);
 
   vec3 n;
-  if (aCara < 0.5) n = vec3(0.0, -1.0, 0.0);
-  else if (aCara < 1.5) n = vec3(c, 0.0, s);
-  else if (aCara < 2.5) n = vec3(0.0, 1.0, 0.0);
-  else if (aCara < 3.5) n = vec3(-c, 0.0, -s);
-  else if (aCara < 4.5) n = vec3(s, 0.0, -c);
-  else n = vec3(-s, 0.0, c);
+  if (aCara < 7.5) {
+    int f = int(aCara + 0.5);
+    vec2 d = uPerfil[f == 7 ? 0 : f + 1] - uPerfil[f];
+    vec2 n2 = length(d) > 0.00001 ? normalize(vec2(d.y, -d.x)) : vec2(0.0, 1.0);
+    n = vec3(n2.x * c, n2.y, n2.x * s);
+  } else if (aCara < 8.5) {
+    n = vec3(s, 0.0, -c);
+  } else {
+    n = vec3(-s, 0.0, c);
+  }
 
   vec4 mundo = modelMatrix * vec4(posicion, 1.0);
   vMundo = mundo.xyz;
+  vLocal = posicion;
   vNormal = normalize(mat3(modelMatrix) * n);
   vCara = aCara;
-  vAltura = uMediaAltura > 0.0001 ? y / uMediaAltura : 1.0;
+  vFraccion = fraccion;
   gl_Position = projectionMatrix * viewMatrix * mundo;
 }
 `;
 
+// Material: violeta con luz principal, brillo especular y de contorno; paneles
+// con costuras; filos de luz en los topes de los rebordes; luces de navegación
+// en la pared de afuera; el suelo oscuro, de noche, donde brillan las ciudades.
+// La punta del trazo brilla en dorado (tinta fresca). Al final todo se apaga
+// hasta el violeta plano del logo.
 const FRAGMENTO = /* glsl */ `
 uniform vec3 uColor;
 uniform vec3 uColorLogo;
@@ -142,22 +192,90 @@ uniform vec3 uLuz;
 uniform vec3 uCamara;
 uniform float uPlano;
 uniform float uOpacidad;
+uniform float uFin;
+uniform float uCabeza;
+uniform float uDetalle;
+uniform float uTiempo;
+uniform vec2 uPerfil[8];
 varying vec3 vNormal;
 varying vec3 vMundo;
+varying vec3 vLocal;
 varying float vCara;
-varying float vAltura;
+varying float vFraccion;
+
+// 1 sobre una línea (cerca de un entero de x), con borde suavizado.
+float rejilla(float x, float grosor) {
+  float d = abs(fract(x + 0.5) - 0.5);
+  float w = fwidth(x) * 1.2;
+  return 1.0 - smoothstep(grosor, grosor + w, d);
+}
+
+// 1 cerca de 0, con borde suavizado.
+float linea(float x, float grosor) {
+  float w = fwidth(x) * 1.2;
+  return 1.0 - smoothstep(grosor, grosor + w, abs(x));
+}
 
 void main() {
   vec3 n = normalize(vNormal);
   if (!gl_FrontFacing) n = -n;
   vec3 v = normalize(uCamara - vMundo);
-  float difusa = max(dot(n, normalize(uLuz)), 0.0);
-  float borde = pow(1.0 - max(dot(n, v), 0.0), 3.0);
-  // Tono por cara: arriba la más clara; adentro, más oscura (ahí brillan las
-  // ciudades) con un degradado hacia el centro de la banda.
-  float tono = vCara < 0.5 ? 0.42 : vCara < 1.5 ? 0.62 : vCara < 2.5 ? 1.0 : vCara < 3.5 ? 0.5 + 0.12 * (1.0 - abs(vAltura)) : 0.75;
-  vec3 color = uColor * (0.38 + 0.72 * difusa) * tono + vec3(0.61, 0.52, 1.0) * borde * 0.3;
-  // Al final, la cara de arriba es exactamente el violeta plano del logo.
+  vec3 l = normalize(uLuz);
+  vec3 h = normalize(l + v);
+  float difusa = max(dot(n, l), 0.0);
+  float especular = pow(max(dot(n, h), 0.0), 40.0);
+  float contorno = pow(1.0 - max(dot(n, v), 0.0), 2.5);
+
+  float r = length(vLocal.xz);
+  float paneles = vFraccion * 72.0;
+  float abajo = uPerfil[0].y;
+  float tope = uPerfil[2].y;
+  float alturaPared = clamp((vLocal.y - abajo) / max(0.0001, tope - abajo), 0.0, 1.0);
+  vec3 base;
+  vec3 luz = vec3(0.0);
+  float enCabeza = 0.0;
+
+  if (vCara < 0.5) {
+    base = uColor * 0.2;
+  } else if (vCara < 1.5 || (vCara > 6.5 && vCara < 7.5)) {
+    // Paredes (afuera y adentro): degradado, costuras y luces de navegación.
+    base = mix(uColor * 0.28, uColor * 0.9, alturaPared);
+    base *= 1.0 - 0.4 * rejilla(paneles, 0.012);
+    float franja = linea(alturaPared - 0.42, 0.07);
+    float puntos = rejilla(paneles * 3.0, 0.09);
+    float parpadeo = 0.6 + 0.4 * sin(uTiempo * 1.7 + floor(paneles * 3.0) * 1.3);
+    float intensidad = vCara < 1.5 ? 1.1 : 0.55;
+    luz += vec3(0.78, 0.74, 1.0) * franja * puntos * parpadeo * intensidad;
+    enCabeza = vCara < 1.5 ? smoothstep(0.75, 1.0, alturaPared) : 0.0;
+  } else if ((vCara > 1.5 && vCara < 2.5) || (vCara > 5.5 && vCara < 6.5)) {
+    // Topes de los rebordes: la parte más clara, con filos de luz.
+    base = uColor * 1.12;
+    base *= 1.0 - 0.25 * rejilla(paneles, 0.01);
+    float r0 = vCara < 2.5 ? uPerfil[3].x : uPerfil[6].x;
+    float r1 = vCara < 2.5 ? uPerfil[2].x : uPerfil[7].x;
+    luz += vec3(0.84, 0.77, 1.0) * (linea(r - r0, 0.025) + linea(r - r1, 0.025)) * 0.9;
+    enCabeza = vCara < 2.5 ? 1.0 : 0.4;
+  } else if (vCara > 3.5 && vCara < 4.5) {
+    // Suelo: donde viven las ciudades, de noche. Sendas tenues entre paneles.
+    float t = (r - uPerfil[5].x) / max(0.0001, uPerfil[4].x - uPerfil[5].x);
+    base = mix(vec3(0.06, 0.05, 0.15), vec3(0.11, 0.08, 0.26), t);
+    base *= 1.0 - 0.3 * rejilla(paneles, 0.008);
+    luz += uColor * 0.18 * rejilla(t * 3.0, 0.02);
+  } else if (vCara < 7.5) {
+    // Lados internos de los rebordes.
+    base = uColor * 0.45;
+  } else {
+    // Tapas.
+    base = uColor * 0.6;
+  }
+
+  vec3 color = base * (0.3 + 0.82 * difusa) + vec3(1.0) * especular * 0.2 + vec3(0.55, 0.45, 1.0) * contorno * 0.28;
+  color += luz * uDetalle;
+  // Tinta fresca: brillo dorado en la punta del trazo, sobre los topes y el
+  // filo de afuera (en las tapas y el suelo se volvía un bloque de luz).
+  float cabeza = smoothstep(0.022, 0.0, uFin - vFraccion) * step(vFraccion, uFin + 0.0001) * uCabeza * enCabeza;
+  color += vec3(1.0, 0.68, 0.2) * cabeza * 1.2;
+  // Al final, exactamente el violeta plano del logo.
   color = mix(color, uColorLogo, uPlano);
   gl_FragColor = vec4(color, uOpacidad);
 }
@@ -170,6 +288,10 @@ export function rgb(hex: string) {
 }
 
 export function crearMaterialAnillo() {
+  const puntos = perfil(
+    0,
+    Array.from({ length: PUNTOS }, () => new THREE.Vector2()),
+  );
   return new THREE.ShaderMaterial({
     vertexShader: VERTICE,
     fragmentShader: FRAGMENTO,
@@ -179,15 +301,16 @@ export function crearMaterialAnillo() {
       uInicio: { value: (ARO.anguloInicio * Math.PI) / 180 },
       uArco: { value: (ARO.anguloArco * Math.PI) / 180 },
       uFin: { value: 0 },
-      uRadioInterior: { value: RADIO - GROSOR_BANDA },
-      uRadioExterior: { value: RADIO },
-      uMediaAltura: { value: MEDIA_ALTURA_BANDA },
+      uPerfil: { value: puntos },
       uColor: { value: rgb("#7C5CFF") },
       uColorLogo: { value: rgb("#6C4CF1") },
-      uLuz: { value: new THREE.Vector3(-0.4, 1, 0.55) },
+      uLuz: { value: new THREE.Vector3(-0.45, 1, 0.6) },
       uCamara: { value: new THREE.Vector3() },
       uPlano: { value: 0 },
       uOpacidad: { value: 1 },
+      uCabeza: { value: 0 },
+      uDetalle: { value: 1 },
+      uTiempo: { value: 0 },
     },
   });
 }

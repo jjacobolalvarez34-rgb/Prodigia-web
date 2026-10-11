@@ -52,7 +52,7 @@ void main() {
   vec2 c = gl_PointCoord - 0.5;
   float d = length(c);
   if (d > 0.5) discard;
-  float a = vAlfa * smoothstep(0.5, 0.05, d) * atenuar();
+  float a = vAlfa * smoothstep(0.5, 0.18, d) * atenuar();
   gl_FragColor = vec4(vColor, a);
 }
 `;
@@ -103,15 +103,20 @@ export function crearEstrellas(cantidad: number) {
   const brillo = new Float32Array(cantidad);
   const color = new Float32Array(cantidad * 3);
   for (let i = 0; i < cantidad; i++) {
-    // En una cáscara lejana alrededor del anillo.
-    const u = azar() * 2 - 1;
-    const t = azar() * Math.PI * 2;
+    // En una cáscara lejana, solo detrás del anillo: la parte del cielo hacia
+    // donde mira la cámara durante toda la intro (abajo y hacia −Z). Repartidas
+    // en toda la esfera, a la vista quedaban unas pocas decenas.
+    const elevacion = (-90 + azar() * 100) * (Math.PI / 180);
+    const azimut = (-180 + azar() * 160) * (Math.PI / 180);
     const r = 120 + azar() * 60;
-    const s = Math.sqrt(1 - u * u);
-    posicion.set([r * s * Math.cos(t), r * u, r * s * Math.sin(t)], i * 3);
-    tam[i] = azar() < 0.85 ? 1.4 : 2.4;
+    posicion.set(
+      [r * Math.cos(azimut) * Math.cos(elevacion), r * Math.sin(elevacion), r * Math.sin(azimut) * Math.cos(elevacion)],
+      i * 3,
+    );
+    const tirada = azar();
+    tam[i] = tirada < 0.75 ? 1.8 : tirada < 0.95 ? 2.8 : 4.2;
     fase[i] = azar();
-    brillo[i] = 0.3 + azar() * 0.6;
+    brillo[i] = tirada < 0.95 ? 0.4 + azar() * 0.5 : 0.95;
     const lila = azar() < 0.25;
     color.set(lila ? [0.73, 0.66, 1] : [0.96, 0.96, 0.98], i * 3);
   }

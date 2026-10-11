@@ -3,16 +3,9 @@ import * as THREE from "three";
 import { ARO, avanceAnillo, dentroDe } from "@/lib/progreso-intro";
 
 import { fundido, mezcla, suave } from "../render2d";
-import {
-  GROSOR_BANDA,
-  MEDIA_ALTURA_BANDA,
-  RADIO,
-  RADIO_INTERIOR_LOGO,
-  crearGeometriaAnillo,
-  crearMaterialAnillo,
-  indicesParaFraccion,
-} from "./anillo";
+import { PERFIL, RADIO, SUELO, crearGeometriaAnillo, crearMaterialAnillo, indicesParaFraccion, perfil } from "./anillo";
 import { crearCiudades } from "./ciudades";
+import { crearHalo } from "./halo";
 import { crearEstrellas, crearRastro } from "./particulas";
 import type { Puente3D } from "./tipos";
 
@@ -83,8 +76,9 @@ export function crearDirector(movil: boolean) {
   const anillo = new THREE.Mesh(geometria, material);
   anillo.frustumCulled = false;
   const ciudades = crearCiudades();
+  const halo = crearHalo();
   const grupo = new THREE.Group();
-  grupo.add(anillo, ciudades.malla);
+  grupo.add(halo.malla, anillo, ciudades.grupo);
   const estrellas = crearEstrellas(movil ? 400 : 900);
   const rastro = crearRastro(movil ? 60 : 120, movil ? 180 : 400);
   const raiz = new THREE.Group();
@@ -93,10 +87,13 @@ export function crearDirector(movil: boolean) {
   const datosCamara: DatosCamara = { posicion: new THREE.Vector3(), arriba: new THREE.Vector3(), desplazamiento: { x: 0, y: 0 } };
   const camaraDespegue = new THREE.PerspectiveCamera(FOV, 1, 0.1, 600);
   const punta = new THREE.Vector3();
+  const puntosPerfil = material.uniforms.uPerfil.value as THREE.Vector2[];
+  // La pluma traza sobre el tope del reborde de afuera.
+  const radioPunta = RADIO - PERFIL.anchoReborde / 2;
+  const alturaPunta = PERFIL.losa + PERFIL.reborde;
   let anterior = -1;
   let tiempo = 0;
   let cuadros = 0;
-  let sumaTiempo = 0;
 
   function ponerPluma(c: Cuadro, p: number) {
     const { puente, camara, ancho, alto } = c;
@@ -110,11 +107,10 @@ export function crearDirector(movil: boolean) {
       const pose = camaraPara(puente, 0.07, ancho, alto, datos);
       camaraDespegue.aspect = ancho / alto;
       aplicarCamara(camaraDespegue, datos, ancho, alto);
-      const radio = RADIO - GROSOR_BANDA / 2;
       const inicio = new THREE.Vector3(
-        radio * Math.cos(ARO.anguloInicio * RAD),
-        MEDIA_ALTURA_BANDA,
-        radio * Math.sin(ARO.anguloInicio * RAD),
+        radioPunta * Math.cos(ARO.anguloInicio * RAD),
+        alturaPunta,
+        radioPunta * Math.sin(ARO.anguloInicio * RAD),
       ).applyAxisAngle(new THREE.Vector3(0, 1, 0), -pose.rz * RAD);
       const hasta = proyectar(inicio, camaraDespegue, ancho, alto);
       const ultima = m.letras[m.letras.length - 1];
@@ -147,11 +143,8 @@ export function crearDirector(movil: boolean) {
     );
   }
 
-  /**
-   * Un cuadro. Devuelve "listo" en el primero (la escena ya se ve), "lento" si
-   * el equipo no llega a 20 cuadros por segundo (la intro vuelve al 2D).
-   */
-  function cuadro(c: Cuadro): "listo" | "lento" | null {
+  /** Un cuadro. Devuelve "listo" en el primero (la escena ya se ve). */
+  function cuadro(c: Cuadro): "listo" | null {
     const { puente, camara, ancho, alto, dpr, delta } = c;
     const m = puente.medidas;
     if (!m || !puente.poseAnillo || ancho === 0) return null;
@@ -164,23 +157,27 @@ export function crearDirector(movil: boolean) {
     grupo.rotation.y = -pose.rz * RAD;
     grupo.updateMatrixWorld();
 
-    // ── Anillo: trazo (drawRange) y paso de banda a aro plano ──
+    // ── Anillo: trazo (drawRange) y paso de la losa al aro plano del logo ──
     const a = avanceAnillo(p);
     const kLogo = suave(dentroDe(p, [0.81, 0.93]));
     const u = material.uniforms;
     u.uFin.value = a;
-    u.uRadioInterior.value = mezcla(RADIO - GROSOR_BANDA, RADIO_INTERIOR_LOGO, kLogo);
-    u.uMediaAltura.value = mezcla(MEDIA_ALTURA_BANDA, 0.04, kLogo);
+    perfil(kLogo, puntosPerfil);
     u.uPlano.value = suave(dentroDe(p, [0.86, 0.93]));
     u.uCamara.value.copy(camara.position);
     const atenuado = 1 - 0.6 * fundido(p, 0.715, 0.735, 0.79, 0.81);
     u.uOpacidad.value = atenuado;
+    u.uTiempo.value = tiempo;
+    // La punta brilla mientras traza; los detalles (filos, luces) se apagan
+    // cuando la banda se vuelve el aro plano del logo.
+    u.uCabeza.value = fundido(p, 0.066, 0.08, 0.6, 0.645);
+    u.uDetalle.value = 1 - suave(dentroDe(p, [0.82, 0.9]));
+    halo.actualizar(a, atenuado * (1 - kLogo));
     geometria.setDrawRange(0, indicesParaFraccion(a));
     anillo.visible = a > 0.001;
 
     // ── Ciudades ──
-    ciudades.actualizar(p, tiempo);
-    ciudades.material.uniforms.uOpacidad.value = atenuado;
+    ciudades.actualizar(p, tiempo, atenuado);
 
     // ── Partículas ──
     for (const mat of [estrellas.material, rastro.material]) {
@@ -192,16 +189,16 @@ export function crearDirector(movil: boolean) {
 
     // ── Punta del trazo: rastro de tinta y polvo ──
     const anguloFin = (ARO.anguloInicio + a * ARO.anguloArco) * RAD;
-    const radioPunta = RADIO - GROSOR_BANDA / 2;
-    punta.set(radioPunta * Math.cos(anguloFin), u.uMediaAltura.value, radioPunta * Math.sin(anguloFin));
+    const alturaAhora = puntosPerfil[2].y;
+    punta.set(radioPunta * Math.cos(anguloFin), alturaAhora, radioPunta * Math.sin(anguloFin));
     grupo.localToWorld(punta);
     if (p > 0.07 && p < 0.63 && Math.abs(p - anterior) > 0.0002) {
       rastro.emitir(punta.x, punta.y, punta.z, true);
       rastro.emitir(punta.x, punta.y, punta.z, true);
       for (let i = 0; i < 3; i++) {
         const atras = anguloFin - Math.random() * 0.12;
-        const r = RADIO - Math.random() * GROSOR_BANDA;
-        const polvo = new THREE.Vector3(r * Math.cos(atras), (Math.random() - 0.2) * MEDIA_ALTURA_BANDA, r * Math.sin(atras));
+        const r = SUELO.desde + Math.random() * (RADIO - SUELO.desde);
+        const polvo = new THREE.Vector3(r * Math.cos(atras), SUELO.altura + Math.random() * 0.4, r * Math.sin(atras));
         grupo.localToWorld(polvo);
         rastro.emitir(polvo.x, polvo.y, polvo.z, false);
       }
@@ -212,19 +209,16 @@ export function crearDirector(movil: boolean) {
     // ── Pluma (DOM) en la punta proyectada ──
     if (puente.ponerPluma && p > 0.0015 && p < 0.93) ponerPluma(c, p);
 
-    // ── Listo tras el primer cuadro; si el equipo no da, vuelta al 2D ──
+    // ── Listo tras el primer cuadro ──
     cuadros += 1;
-    if (cuadros === 1) return "listo";
-    if (cuadros > 20 && cuadros <= 110) sumaTiempo += delta;
-    if (cuadros === 110 && sumaTiempo / 90 > 0.05) return "lento";
-    return null;
+    return cuadros === 1 ? "listo" : null;
   }
 
   function destruir() {
     geometria.dispose();
     material.dispose();
-    ciudades.malla.geometry.dispose();
-    ciudades.material.dispose();
+    ciudades.destruir();
+    halo.destruir();
     estrellas.puntos.geometry.dispose();
     estrellas.material.dispose();
     rastro.puntos.geometry.dispose();
